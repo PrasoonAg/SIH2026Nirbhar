@@ -1,0 +1,616 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PRAMANA",
+    "description": "Offline, air-gapped, multi-vendor network-configuration compliance auditor. SIH26155 \u00b7 NTRO \u00b7 Team Vernils",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/ingest/file": {
+      "post": {
+        "tags": [
+          "ingest"
+        ],
+        "summary": "Upload a single config file",
+        "description": "Upload a single configuration file.\nReturns a content-addressed artifact record.\nIdentical content is deduplicated by SHA-256.",
+        "operationId": "upload_file_api_v1_ingest_file_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_file_api_v1_ingest_file_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtifactResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ingest/zip": {
+      "post": {
+        "tags": [
+          "ingest"
+        ],
+        "summary": "Upload a ZIP archive of config files",
+        "description": "Upload a ZIP archive. All members are stored as individual artifacts.\nZIP guards enforced (INV-11, \u00a712): max members, max size, ratio, no traversal.",
+        "operationId": "upload_zip_api_v1_ingest_zip_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_zip_api_v1_ingest_zip_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZipIngestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/audits": {
+      "post": {
+        "tags": [
+          "audits"
+        ],
+        "summary": "Start a compliance audit",
+        "description": "Submit a config artifact for compliance auditing.\nPhase 1: runs synchronously and returns DONE immediately.\nPhase 4+: returns PENDING and polls GET /audits/{job_id}.",
+        "operationId": "start_audit_api_v1_audits_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartAuditRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/audits/{job_id}": {
+      "get": {
+        "tags": [
+          "audits"
+        ],
+        "summary": "Get audit job status and result",
+        "description": "Return the current status of an audit job.\nWhen status=done, the result includes both scores and all findings.",
+        "operationId": "get_audit_api_v1_audits__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ArtifactResponse": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "title": "Artifact Id"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "vendor_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor Hint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "sha256",
+          "filename",
+          "size_bytes"
+        ],
+        "title": "ArtifactResponse"
+      },
+      "Body_upload_file_api_v1_ingest_file_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "vendor_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor Hint"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_file_api_v1_ingest_file_post"
+      },
+      "Body_upload_zip_api_v1_ingest_zip_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_zip_api_v1_ingest_zip_post"
+      },
+      "FindingResponse": {
+        "properties": {
+          "check_id": {
+            "type": "string",
+            "title": "Check Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "trust": {
+            "type": "string",
+            "title": "Trust"
+          },
+          "blast_radius_flag": {
+            "type": "boolean",
+            "title": "Blast Radius Flag"
+          },
+          "evidence_line_refs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Evidence Line Refs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "check_id",
+          "status",
+          "trust",
+          "blast_radius_flag",
+          "evidence_line_refs"
+        ],
+        "title": "FindingResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "JobResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "artifact_id": {
+            "type": "string",
+            "title": "Artifact Id"
+          },
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "profile_commit": {
+            "type": "string",
+            "title": "Profile Commit"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "progress": {
+            "type": "integer",
+            "title": "Progress"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "vendor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor Id"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TwoNumberScore"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "findings": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FindingResponse"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Findings"
+          },
+          "total_lines": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Lines"
+          },
+          "recognized_lines": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recognized Lines"
+          },
+          "unrecognized_lines": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unrecognized Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "artifact_id",
+          "device_id",
+          "profile_commit",
+          "status",
+          "progress"
+        ],
+        "title": "JobResponse"
+      },
+      "StartAuditRequest": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "title": "Artifact Id"
+          },
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "profile_commit": {
+            "type": "string",
+            "title": "Profile Commit",
+            "default": "HEAD"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "device_id"
+        ],
+        "title": "StartAuditRequest"
+      },
+      "TwoNumberScore": {
+        "properties": {
+          "verified": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified"
+          },
+          "provisional_inclusive": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisional Inclusive"
+          },
+          "provisional_dependence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisional Dependence"
+          },
+          "verified_numerator": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified Numerator"
+          },
+          "verified_denominator": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified Denominator"
+          },
+          "provisional_inclusive_numerator": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisional Inclusive Numerator"
+          },
+          "provisional_inclusive_denominator": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisional Inclusive Denominator"
+          }
+        },
+        "type": "object",
+        "required": [
+          "verified",
+          "provisional_inclusive",
+          "provisional_dependence",
+          "verified_numerator",
+          "verified_denominator",
+          "provisional_inclusive_numerator",
+          "provisional_inclusive_denominator"
+        ],
+        "title": "TwoNumberScore",
+        "description": "Two-number score (INV-07). Always both figures together.\nVerified excludes Provisional checks; Provisional-Inclusive includes them.\nProvisional-dependence shows how much evaluated weight rests on Provisional mappings.\nNo single combined figure exists in this schema."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ZipIngestResponse": {
+        "properties": {
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/ArtifactResponse"
+            },
+            "type": "array",
+            "title": "Artifacts"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifacts",
+          "count"
+        ],
+        "title": "ZipIngestResponse"
+      }
+    }
+  }
+}

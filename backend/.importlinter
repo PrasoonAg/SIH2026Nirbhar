@@ -1,0 +1,253 @@
+[importlinter]
+root_packages =
+    pramana
+include_external_packages = True
+python_path = src
+
+# ─── Layer-boundary contracts ──────────────────────────────────────────────────
+
+[importlinter:contract:shared_kernel_is_bottom]
+name = shared_kernel imports nothing internal
+type = forbidden
+source_modules =
+    pramana.shared_kernel
+forbidden_modules =
+    pramana.identity
+    pramana.ledger
+    pramana.baseline
+    pramana.crypto
+    pramana.scoring
+    pramana.parsing
+    pramana.proposer
+    pramana.trustgate
+    pramana.profiles
+    pramana.compliance
+    pramana.mapping
+    pramana.ingest
+    pramana.pipeline
+    pramana.sandbox
+    pramana.reporting
+    pramana.federation
+    pramana.bootstrap
+
+[importlinter:contract:l1_no_higher_layer_imports]
+name = L1 modules do not import L2 or above
+type = forbidden
+source_modules =
+    pramana.identity
+    pramana.ledger
+    pramana.baseline
+    pramana.crypto
+    pramana.scoring
+forbidden_modules =
+    pramana.parsing
+    pramana.proposer
+    pramana.trustgate
+    pramana.profiles
+    pramana.compliance
+    pramana.mapping
+    pramana.ingest
+    pramana.pipeline
+    pramana.sandbox
+    pramana.reporting
+    pramana.federation
+    pramana.bootstrap
+
+[importlinter:contract:l2_may_use_l0_l1_api_only]
+name = L2 modules import lower layers via api.py only
+type = forbidden
+source_modules =
+    pramana.parsing
+    pramana.proposer
+    pramana.trustgate
+    pramana.profiles
+    pramana.compliance
+forbidden_modules =
+    pramana.mapping
+    pramana.ingest
+    pramana.pipeline
+    pramana.sandbox
+    pramana.reporting
+    pramana.federation
+    pramana.bootstrap
+
+[importlinter:contract:l3_may_use_l0_to_l2_api_only]
+name = L3 modules (mapping ingest) import only lower layers
+type = forbidden
+source_modules =
+    pramana.mapping
+    pramana.ingest
+forbidden_modules =
+    pramana.pipeline
+    pramana.sandbox
+    pramana.reporting
+    pramana.federation
+    pramana.bootstrap
+
+[importlinter:contract:l4_pipeline_boundaries]
+name = pipeline does not import L5 or bootstrap
+type = forbidden
+source_modules =
+    pramana.pipeline
+forbidden_modules =
+    pramana.sandbox
+    pramana.reporting
+    pramana.federation
+    pramana.bootstrap
+
+[importlinter:contract:l5_does_not_import_bootstrap]
+name = L5 modules do not import bootstrap
+type = forbidden
+source_modules =
+    pramana.sandbox
+    pramana.reporting
+    pramana.federation
+forbidden_modules =
+    pramana.bootstrap
+
+# ─── INV-02: proposer and trustgate independence ───────────────────────────────
+
+[importlinter:contract:inv02_proposer_trustgate_independence]
+name = INV-02 proposer and trustgate never import each other
+type = independence
+modules =
+    pramana.proposer
+    pramana.trustgate
+
+# ─── R3: domain folders import no framework ────────────────────────────────────
+
+[importlinter:contract:r3_no_framework_in_domain_identity]
+name = R3 identity domain has no framework imports
+type = forbidden
+source_modules =
+    pramana.identity.domain
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    torch
+    sentence_transformers
+    pygit2
+    weasyprint
+    httpx
+
+[importlinter:contract:r3_no_framework_in_domain_ledger]
+name = R3 ledger domain has no framework imports
+type = forbidden
+source_modules =
+    pramana.ledger.domain
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    torch
+    sentence_transformers
+    pygit2
+    weasyprint
+    httpx
+
+[importlinter:contract:r3_no_framework_in_domain_baseline]
+name = R3 baseline domain has no framework imports
+type = forbidden
+source_modules =
+    pramana.baseline.domain
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    torch
+    sentence_transformers
+    pygit2
+    weasyprint
+    httpx
+
+[importlinter:contract:r3_no_framework_in_domain_scoring]
+name = R3 scoring domain has no framework imports
+type = forbidden
+source_modules =
+    pramana.scoring.domain
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    torch
+    sentence_transformers
+    pygit2
+    weasyprint
+    httpx
+
+[importlinter:contract:r3_no_framework_in_domain_parsing]
+name = R3 parsing domain has no framework imports
+type = forbidden
+source_modules =
+    pramana.parsing.domain
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    torch
+    sentence_transformers
+    pygit2
+    weasyprint
+    httpx
+
+[importlinter:contract:r3_no_framework_in_domain_mapping]
+name = R3 mapping domain has no framework imports
+type = forbidden
+source_modules =
+    pramana.mapping.domain
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    torch
+    sentence_transformers
+    pygit2
+    weasyprint
+    httpx
+
+[importlinter:contract:r7_scoring_is_pure]
+name = R7 scoring is pure (stdlib + pydantic only)
+type = forbidden
+source_modules =
+    pramana.scoring
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    torch
+    sentence_transformers
+    pygit2
+    weasyprint
+    httpx
+    pramana.identity
+    pramana.ledger
+    pramana.baseline
+    pramana.crypto
+    pramana.parsing
+    pramana.proposer
+    pramana.trustgate
+    pramana.profiles
+    pramana.compliance
+    pramana.mapping
+    pramana.ingest
+    pramana.pipeline
+    pramana.sandbox
+    pramana.reporting
+    pramana.federation
+    pramana.bootstrap
+
+[importlinter:contract:r7_baseline_mapping_spec_is_pure]
+name = R7 baseline.mapping_spec is pure (stdlib + pydantic only)
+type = forbidden
+source_modules =
+    pramana.baseline.domain.mapping_spec
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    torch
+    sentence_transformers
+    pygit2
+    weasyprint
+    httpx
+
+[importlinter:contract:r9_no_eval_exec_pickle]
+name = R9 no eval exec pickle on untrusted data
+type = forbidden
+source_modules =
+    pramana
+forbidden_modules =
+    pickle

@@ -1,0 +1,30 @@
+{
+  "schema_version": "1",
+  "description": "PRAMANA bundled model manifest. Verify all SHA-256 hashes at startup (INV-17).",
+  "note": "Weights are git-ignored (or git-lfs). Populate before Phase 3.",
+  "models": [
+    {
+      "role": "proposer",
+      "family": "MiniLM",
+      "name": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "TODO_VERIFY",
+      "local_path": "models/weights/proposer/all-MiniLM-L6-v2",
+      "weights_sha256": "TODO_VERIFY",
+      "anchor_index": "models/weights/proposer/anchors.npz",
+      "anchor_index_sha256": "TODO_VERIFY",
+      "licence": "Apache-2.0",
+      "tier": "T1"
+    },
+    {
+      "role": "verifier",
+      "family": "TODO_VERIFY",
+      "name": "TODO_VERIFY",
+      "revision": "TODO_VERIFY",
+      "local_path": "models/weights/verifier/",
+      "weights_sha256": "TODO_VERIFY",
+      "licence": "TODO_VERIFY",
+      "tier": "T1",
+      "note": "Family must differ from proposer (MiniLM). See ADR-0004 (Phase 5) for final choice among flan-t5-base, deberta-v3-small, Qwen2.5-0.5B."
+    }
+  ]
+}

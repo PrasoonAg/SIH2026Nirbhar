@@ -1,0 +1,1 @@
+@docs/PRAMANA_MASTER_PROMPT.md

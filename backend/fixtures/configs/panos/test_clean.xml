@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PAN-OS clean fixture: no HTTP/telnet, custom SNMP, NTP, syslog, permitted-ip ACL -->
+<config version="11.0.0">
+  <devices>
+    <entry name="localhost.localdomain">
+      <deviceconfig>
+        <system>
+          <hostname>fw-clean-01</hostname>
+          <domain>lab.example.com</domain>
+          <!-- SNMP with non-default community -->
+          <snmp-setting>
+            <access-setting>
+              <version>
+                <v2c>
+                  <snmp-community-string>NTRO-SNMPv2-RO</snmp-community-string>
+                </v2c>
+              </version>
+            </access-setting>
+          </snmp-setting>
+          <!-- NTP configured -->
+          <ntp-servers>
+            <primary-ntp-server>
+              <ntp-server-address>10.0.100.10</ntp-server-address>
+            </primary-ntp-server>
+            <secondary-ntp-server>
+              <ntp-server-address>10.0.100.11</ntp-server-address>
+            </secondary-ntp-server>
+          </ntp-servers>
+          <!-- Syslog configured -->
+          <log-export-schedule>
+            <entry name="syslog-export">
+              <protocol>
+                <syslog>
+                  <server>10.0.100.5</server>
+                </syslog>
+              </protocol>
+            </entry>
+          </log-export-schedule>
+          <!-- SSH permitted IPs (management ACL) -->
+          <permitted-ip>
+            <entry name="mgmt-subnet">
+              <ip-netmask>10.0.100.0/24</ip-netmask>
+            </entry>
+          </permitted-ip>
+        </system>
+      </deviceconfig>
+      <vsys>
+        <entry name="vsys1">
+          <rulebase>
+            <security>
+            </security>
+          </rulebase>
+        </entry>
+      </vsys>
+      <network>
+        <profiles>
+          <interface-management-profile>
+            <entry name="MGMT-SECURE">
+              <!-- Only SSH and ping — no HTTP or telnet -->
+              <https>yes</https>
+              <ssh>yes</ssh>
+              <ping>yes</ping>
+            </entry>
+          </interface-management-profile>
+        </profiles>
+      </network>
+    </entry>
+  </devices>
+</config>

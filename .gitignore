@@ -1,0 +1,79 @@
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.so
+.venv/
+venv/
+env/
+.python-version
+site/
+.pdm-python
+pdm.lock
+pip-wheel-metadata/
+
+# ─── Test / coverage caches ───────────────────────────────────────────────────
+.pytest_cache/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+.grimp_cache/
+.import_linter_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ─── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env.local
+*.local
+
+# ─── Secrets / env ────────────────────────────────────────────────────────────
+.env
+*.env
+data/secrets/
+*.pem
+*.key
+*.crt
+
+# ─── OS / editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── Docker / compose leftovers ───────────────────────────────────────────────
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Models (large binary — ship separately via bundle script) ────────────────
+models/*.bin
+models/*.safetensors
+models/*.gguf
+models/*.pt
+models/*.onnx
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+*.bak
+*.tmp
+.benchmark_results/
