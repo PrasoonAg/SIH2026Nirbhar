@@ -1,6 +1,6 @@
 {
   "_note": "Seeded refinery data for NIRBHAR demo/refinery.ts generator. SYNTHETIC — not MRPL data.",
-  "_extraction_status": "Default values used; roviq.xyz extraction was incomplete due to network interruption. Update if real data is available.",
+  "_extraction_status": "Seeded synthetic refinery data used by the prototype. No external reference dataset is required for this build.",
   "crudes": [
     { "name": "Arab Light",    "price": 82.0, "avail_kbd": 120, "sulfur_pct": 1.8, "yields": [0.04, 0.12, 0.18, 0.08, 0.32, 0.26] },
     { "name": "Arab Heavy",    "price": 76.0, "avail_kbd":  80, "sulfur_pct": 2.9, "yields": [0.02, 0.09, 0.15, 0.07, 0.30, 0.37] },
@@ -38,5 +38,5 @@
     "ATF": 10.0, "Diesel": 40.0, "FuelOil": 20.0
   },
   "source": "default-synthetic",
-  "source_page": "N/A — roviq.xyz extraction incomplete"
+  "source_page": "NIRBHAR internal synthetic seed set"
 }

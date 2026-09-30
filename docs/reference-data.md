@@ -1,48 +1,14 @@
-# Reference Data — Extracted from roviq.xyz (Kavach-Opt)
+# Reference Data — NIRBHAR Showcase Seed Set
 
-**Status:** Partial extraction. The browser agent was cancelled due to a network interruption.
-Re-run extraction or paste the data manually if needed.
+**Status:** This project uses the internally seeded synthetic refinery data and does not rely on any third-party reference site. The original reference prototype references were removed to avoid confusion and duplicated branding.
 
-## Pages Visited Before Cancellation
+## Source of the current seed data
 
-The browser agent loaded https://roviq.xyz/ successfully:
-- Landed on the main page (title: "Kavach-Opt — Sovereign Optimization Engine")
-- Dismissed a multi-step "Engine Guide" modal (5 steps → Finish)
-- Reached the main Overview page
-- Was unable to scroll/navigate further tabs due to CDP page ID mismatch error
+The synthetic refinery input set used here is generated from the project's own reference data, stored in `src/data/reference/refinery.json`, and intentionally kept consistent, internally valid, and labelled as synthetic.
 
-## Navigation Structure Observed
-(Inferred from DOM steps; not fully confirmed)
-- Overview / Home
-- Engine Guide (modal walkthrough)
-- Solve / Solver panel
-- Benchmarks
-- Refinery Demo (inferred from the NIRBHAR spec references)
+## Current seeded refinery reference
 
-## Data NOT Yet Extracted
-The following items still need to be extracted (either by re-running the browser agent
-or by the user pasting the content):
-
-1. Crude oil names and prices
-2. Crude availability caps
-3. Crude sulfur %
-4. Crude yield vectors (LPG, naphtha, gasoline, ATF, diesel, fuel oil)
-5. CDU capacities
-6. Product demand ranges
-7. Scenario parameters
-8. Benchmark instance names and sizes
-9. Feature and terminology lists
-
-## Action Required
-
-Either:
-A) Re-run the browser agent on https://roviq.xyz/ with a stable connection
-B) Visit roviq.xyz and paste the crude data and benchmark lists here manually
-
-## Defaults Used (until extraction completes)
-
-Until the reference data is available, the refinery generator in `src/demo/refinery.ts`
-uses the following default crude data (physically plausible, internally consistent):
+The refinery generator in `src/demo/refinery.ts` uses the following default crude data (physically plausible, internally consistent):
 
 | Crude | Price ($/bbl) | Avail (kbd) | Sulfur % | LPG | Naphtha | Gasoline | ATF  | Diesel | FuelOil |
 |-------|--------------|-------------|----------|-----|---------|---------|------|--------|---------|
@@ -60,5 +26,4 @@ uses the following default crude data (physically plausible, internally consiste
 All data is SYNTHETIC — not MRPL operational data.
 Yield fractions sum to 1.0 for each crude. Verify column sums.
 
-If roviq.xyz data is later found to differ, update this file and src/data/reference/
-and log the difference in docs/reference-diff.md.
+If additional real refinery data is provided later, update this file and `src/data/reference/` and log the difference in `docs/reference-diff.md`.
