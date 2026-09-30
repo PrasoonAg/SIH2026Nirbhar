@@ -1,0 +1,279 @@
+{
+  "_comment": "NIRBHAR Showcase — Sample Model Manifest. Add real MPS files to public/samples/ and list them here. The app loads whatever is listed — no code changes needed.",
+  "models": [
+    {
+      "name": "afiro",
+      "path": "/samples/afiro.mps",
+      "class": "LP",
+      "rows": 27,
+      "cols": 32,
+      "nnz": 83,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": -464.7531428571,
+      "source": "Netlib LP collection",
+      "split": "tune",
+      "status": "placeholder",
+      "note": "Drop decompressed afiro.mps into public/samples/ to activate. Placeholder used until then."
+    },
+    {
+      "name": "sc50a",
+      "path": "/samples/sc50a.mps",
+      "class": "LP",
+      "rows": 50,
+      "cols": 48,
+      "nnz": 131,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": -64.57507705856,
+      "source": "Netlib LP collection",
+      "split": "tune",
+      "status": "placeholder",
+      "note": "Drop decompressed sc50a.mps into public/samples/ to activate."
+    },
+    {
+      "name": "sc50b",
+      "path": "/samples/sc50b.mps",
+      "class": "LP",
+      "rows": 50,
+      "cols": 48,
+      "nnz": 119,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": -70.0,
+      "source": "Netlib LP collection",
+      "split": "tune",
+      "status": "placeholder"
+    },
+    {
+      "name": "sc105",
+      "path": "/samples/sc105.mps",
+      "class": "LP",
+      "rows": 105,
+      "cols": 103,
+      "nnz": 281,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": -52.20206121171,
+      "source": "Netlib LP collection",
+      "split": "tune",
+      "status": "placeholder"
+    },
+    {
+      "name": "kb2",
+      "path": "/samples/kb2.mps",
+      "class": "LP",
+      "rows": 43,
+      "cols": 41,
+      "nnz": 192,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": -1749.900129,
+      "source": "Netlib LP collection",
+      "split": "tune",
+      "status": "placeholder"
+    },
+    {
+      "name": "adlittle",
+      "path": "/samples/adlittle.mps",
+      "class": "LP",
+      "rows": 56,
+      "cols": 97,
+      "nnz": 465,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": 225494.9631623,
+      "source": "Netlib LP collection",
+      "split": "report",
+      "status": "placeholder"
+    },
+    {
+      "name": "blend",
+      "path": "/samples/blend.mps",
+      "class": "LP",
+      "rows": 74,
+      "cols": 83,
+      "nnz": 522,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": -30.81214985,
+      "source": "Netlib LP collection",
+      "split": "report",
+      "status": "placeholder"
+    },
+    {
+      "name": "share2b",
+      "path": "/samples/share2b.mps",
+      "class": "LP",
+      "rows": 96,
+      "cols": 79,
+      "nnz": 730,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": -415.7322407,
+      "source": "Netlib LP collection",
+      "split": "report",
+      "status": "placeholder"
+    },
+    {
+      "name": "stocfor1",
+      "path": "/samples/stocfor1.mps",
+      "class": "LP",
+      "rows": 117,
+      "cols": 111,
+      "nnz": 474,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": -41131.97622,
+      "source": "Netlib LP collection",
+      "split": "report",
+      "status": "placeholder"
+    },
+    {
+      "name": "recipe",
+      "path": "/samples/recipe.mps",
+      "class": "LP",
+      "rows": 91,
+      "cols": 180,
+      "nnz": 544,
+      "integers": 0,
+      "q_nnz": 0,
+      "referenceObjective": -266.616,
+      "source": "Netlib LP collection",
+      "split": "report",
+      "status": "placeholder"
+    },
+    {
+      "name": "p0033",
+      "path": "/samples/p0033.mps",
+      "class": "MILP",
+      "rows": null,
+      "cols": null,
+      "nnz": null,
+      "integers": null,
+      "q_nnz": 0,
+      "referenceObjective": 3089.0,
+      "source": "MIPLIB-style",
+      "split": "report",
+      "status": "placeholder",
+      "note": "Drop real p0033.mps into public/samples/ to activate. Uses generated stand-in until then."
+    },
+    {
+      "name": "stein27",
+      "path": "/samples/stein27.mps",
+      "class": "MILP",
+      "rows": null,
+      "cols": null,
+      "nnz": null,
+      "integers": null,
+      "q_nnz": 0,
+      "referenceObjective": 18.0,
+      "source": "MIPLIB-style",
+      "split": "report",
+      "status": "placeholder"
+    },
+    {
+      "name": "egout",
+      "path": "/samples/egout.mps",
+      "class": "MILP",
+      "rows": null,
+      "cols": null,
+      "nnz": null,
+      "integers": null,
+      "q_nnz": 0,
+      "referenceObjective": 568.1007,
+      "source": "MIPLIB-style",
+      "split": "report",
+      "status": "placeholder"
+    },
+    {
+      "name": "lseu",
+      "path": "/samples/lseu.mps",
+      "class": "MILP",
+      "rows": null,
+      "cols": null,
+      "nnz": null,
+      "integers": null,
+      "q_nnz": 0,
+      "referenceObjective": 1120.0,
+      "source": "MIPLIB-style",
+      "split": "report",
+      "status": "placeholder"
+    }
+  ],
+  "generated": [
+    {
+      "name": "refinery-lp",
+      "class": "LP",
+      "generator": "demo/refinery.ts",
+      "approxSize": "100-150 vars, 60-90 rows",
+      "note": "Synthetic 4-period, 10-crude refinery blending LP. SYNTHETIC — not MRPL data."
+    },
+    {
+      "name": "refinery-milp",
+      "class": "MILP",
+      "generator": "demo/refinery.ts",
+      "note": "Refinery LP + campaign/changeover binaries. SYNTHETIC — not MRPL data."
+    },
+    {
+      "name": "refinery-qp",
+      "class": "QP",
+      "generator": "demo/refinery.ts",
+      "note": "Refinery LP + diagonal price-risk quadratic cost. SYNTHETIC — not MRPL data."
+    },
+    {
+      "name": "refinery-infeasible",
+      "class": "LP",
+      "generator": "demo/refinery.ts",
+      "note": "Over-constrained refinery plan. IIS is 3 named rows: min-diesel-demand, CDU-capacity, crude-availability."
+    },
+    {
+      "name": "lotsizing",
+      "class": "MILP",
+      "generator": "demo/lotsizing.ts",
+      "note": "Capacitated multi-item lot-sizing, 3 items x 8 periods, big-M setups."
+    },
+    {
+      "name": "transport-lp",
+      "class": "LP",
+      "generator": "demo/transport.ts",
+      "note": "Transportation LP, multiple sizes for scale ladder."
+    },
+    {
+      "name": "transport-fc",
+      "class": "MILP",
+      "generator": "demo/transport.ts",
+      "note": "Fixed-charge transportation MILP."
+    },
+    {
+      "name": "unit-commit",
+      "class": "MILP",
+      "generator": "demo/unitCommit.ts",
+      "note": "Unit commitment, 4-6 units x 8-12 periods."
+    },
+    {
+      "name": "facility-location",
+      "class": "MILP",
+      "generator": "demo/supplyChain.ts",
+      "note": "Facility-location network design."
+    },
+    {
+      "name": "beale-cycling",
+      "class": "LP",
+      "generator": "demo/refinery.ts",
+      "note": "Classic Beale cycling LP — designed to cycle under Dantzig pricing with textbook tie-breaking."
+    },
+    {
+      "name": "degenerate-assign",
+      "class": "LP",
+      "generator": "demo/transport.ts",
+      "note": "Degenerate assignment/transportation LP, n=40-60."
+    },
+    {
+      "name": "rescaled-refinery",
+      "class": "LP",
+      "generator": "demo/refinery.ts",
+      "note": "Refinery LP with row/column scaling factors in [1e-6, 1e6]. Optimum unchanged."
+    }
+  ]
+}

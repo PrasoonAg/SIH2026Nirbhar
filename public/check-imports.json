@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-09-30T14:05:19.354Z",
+  "scannedFiles": 22,
+  "files": [
+    "src/solver/certificate/builder.ts",
+    "src/solver/certificate/explain.ts",
+    "src/solver/certificate/schema.ts",
+    "src/solver/dispatch.ts",
+    "src/solver/io/model.ts",
+    "src/solver/io/mps.ts",
+    "src/solver/ipm/ipm.ts",
+    "src/solver/linalg/chol.ts",
+    "src/solver/linalg/condest.ts",
+    "src/solver/linalg/csr.ts",
+    "src/solver/linalg/ldl.ts",
+    "src/solver/linalg/lu.ts",
+    "src/solver/linalg/refine.ts",
+    "src/solver/lp/basis.ts",
+    "src/solver/lp/dualSimplex.ts",
+    "src/solver/presolve/presolve.ts",
+    "src/solver/workers/engine.worker.ts",
+    "src/verify/certTypes.ts",
+    "src/verify/cuts.ts",
+    "src/verify/exact.ts",
+    "src/verify/mpsMin.ts",
+    "src/verify/verify.ts"
+  ],
+  "violations": [],
+  "passed": true,
+  "rules": [
+    {
+      "id": "solver-no-forbidden-package",
+      "desc": "src/solver imports no forbidden numeric/solver package"
+    },
+    {
+      "id": "solver-no-verify-import",
+      "desc": "src/solver does not import from src/verify"
+    },
+    {
+      "id": "verify-no-solver-import",
+      "desc": "src/verify does not import from src/solver"
+    },
+    {
+      "id": "verify-no-forbidden-package",
+      "desc": "src/verify imports no forbidden numeric/solver package"
+    },
+    {
+      "id": "bench-highs-only-in-baseline",
+      "desc": "Only highsBaseline.ts in src/bench may load highs"
+    }
+  ]
+}
