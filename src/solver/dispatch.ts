@@ -23,6 +23,8 @@ import type { Model } from './io/model';
 import type { SolveOptions, EngineResult } from './lp/dualSimplex';
 import { dualSimplexSolve } from './lp/dualSimplex';
 import { ipmSolve } from './ipm/ipm';
+import { hprSolve } from './lp/hpr';
+import { branchAndCutSolve } from './mip/bb';
 import { presolve } from './presolve/presolve';
 
 export type EngineId = 'dual-simplex' | 'ipm' | 'hpr-family' | 'branch-cut';
@@ -107,11 +109,15 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
       break;
     }
 
-    case 'hpr-family':
-      return notImplemented(engine, label, req.model, req.options);
+    case 'hpr-family': {
+      result = hprSolve(targetModel, req.options ?? {});
+      break;
+    }
 
-    case 'branch-cut':
-      return notImplemented(engine, label, req.model, req.options);
+    case 'branch-cut': {
+      result = branchAndCutSolve(targetModel, req.options ?? {});
+      break;
+    }
   }
 
   if (postsolveFn) {

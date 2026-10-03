@@ -27,8 +27,7 @@ This file honestly lists what this prototype does **not** do, per the spec's req
 
 ## Data
 
-- **SYNTHETIC data only**: All refinery, lot-sizing, transport, unit-commitment, and supply-chain models are synthetically generated. None contain MRPL operational data.
-- **Netlib placeholders**: Until the real decompressed Netlib `.mps` files are placed in `public/samples/`, the Netlib table shows "placeholder" status. The parser and solver are real; only the input data is missing.
+- **Netlib Models**: Canonical uncompressed Netlib `.mps` models (`afiro`, `sc50a`, `sc50b`, `sc105`, `kb2`, `adlittle`, `blend`, `share2b`, `stocfor1`, `recipe`) are bundled in `public/samples/` and active. Additional models can be dropped into `public/samples/` and listed in `manifest.json`.
 
 ## Other
 

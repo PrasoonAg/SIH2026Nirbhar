@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "bin": {
+    "nirbhar": "./bin/nirbhar.mjs"
+  },
   "scripts": {
     "dev": "vite",
     "build": "npm run check-imports && tsc -b && vite build",
@@ -10,7 +13,8 @@
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "check-imports": "node tools/check-imports.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "nirbhar": "node bin/nirbhar.mjs"
   },
   "dependencies": {
     "framer-motion": "^13.4.6",

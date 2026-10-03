@@ -153,17 +153,13 @@ export function parseMPS(text: string): ParseResult {
       }
 
       case 'COLUMNS': {
-        // Check for integer markers
-        if (tokens.length >= 3) {
-          const marker = tokens[2].trim().toUpperCase();
-          if (marker === "'MARKER'") {
-            if (tokens.length >= 4) {
-              const tag = tokens[3].trim().toUpperCase();
-              if (tag === "'INTORG'" || tag === 'INTORG') inIntegers = true;
-              else if (tag === "'INTEND'" || tag === 'INTEND') inIntegers = false;
-            }
-            continue;
-          }
+        // Check for integer markers (e.g., MARK0000 'MARKER' 'INTORG')
+        const markerIdx = tokens.findIndex(t => t.toUpperCase().replace(/['"]/g, '') === 'MARKER');
+        if (markerIdx >= 0 && markerIdx + 1 < tokens.length) {
+          const tag = tokens[markerIdx + 1].toUpperCase().replace(/['"]/g, '');
+          if (tag === 'INTORG') inIntegers = true;
+          else if (tag === 'INTEND') inIntegers = false;
+          continue;
         }
 
         // Format: [indent] colName  rowName1 value1 [rowName2 value2]

@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { TopBar } from './ui/shell/TopBar';
 import { NavRail } from './ui/shell/NavRail';
+import { ShowcaseBar } from './ui/shell/ShowcaseBar';
 
 // Lazy-load all pages for code splitting
 const Home          = lazy(() => import('./ui/pages/Home'));
@@ -50,6 +51,7 @@ function App() {
             </Routes>
           </Suspense>
         </main>
+        <ShowcaseBar />
       </div>
     </BrowserRouter>
   );

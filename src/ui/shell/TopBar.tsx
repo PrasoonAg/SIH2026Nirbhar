@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppStore, Theme } from '../../store';
 import {
-  Sun, Moon, Monitor, Video, VideoOff, Cpu,
+  Sun, Moon, Monitor, Video, VideoOff, Cpu, Sparkles
 } from 'lucide-react';
 
 const THEME_OPTIONS: { value: Theme; icon: React.ReactNode; label: string }[] = [
@@ -11,7 +11,7 @@ const THEME_OPTIONS: { value: Theme; icon: React.ReactNode; label: string }[] = 
 ];
 
 export function TopBar() {
-  const { theme, setTheme, recordMode, toggleRecordMode } = useAppStore();
+  const { theme, setTheme, recordMode, toggleRecordMode, showcaseMode, setShowcaseMode } = useAppStore();
   const cores = navigator.hardwareConcurrency ?? 4;
 
   return (
@@ -38,6 +38,25 @@ export function TopBar() {
           {' '}{cores} cores · GPU: none (CPU-JS prototype)
         </span>
       </span>
+
+      <div className="topbar-divider" aria-hidden />
+
+      {/* Showcase Tour Mode */}
+      <button
+        id="topbar-showcase-mode"
+        className={`record-mode-btn${showcaseMode ? ' active' : ''}`}
+        onClick={() => setShowcaseMode(!showcaseMode)}
+        title="Toggle Guided Showcase Tour — 6-chapter guided walkthrough for judges and reviewers"
+        aria-pressed={showcaseMode}
+        style={{
+          background: showcaseMode ? 'rgba(59, 130, 246, 0.2)' : undefined,
+          borderColor: showcaseMode ? 'var(--primary)' : undefined,
+          color: showcaseMode ? 'var(--primary)' : undefined
+        }}
+      >
+        <Sparkles size={11} />
+        {showcaseMode ? 'Exit Tour' : 'Showcase Tour'}
+      </button>
 
       <div className="topbar-divider" aria-hidden />
 

@@ -35,6 +35,8 @@ export interface VerifyModel {
 const INF = 1e30;
 const NEG_INF = -1e30;
 
+export const parseMPSMin = parseMPSVerify;
+
 export function parseMPSVerify(text: string): VerifyModel {
   const lines = text.split(/\r?\n/);
 
@@ -113,8 +115,10 @@ export function parseMPSVerify(text: string): VerifyModel {
         rowByName.set(name, idx);
         rowTypes.push(type);
         rhs.push(0);
-        rowLo.push(NEG_INF);
-        rowHi.push(INF);
+        if (type === 'L') { rowLo.push(NEG_INF); rowHi.push(0); }
+        else if (type === 'G') { rowLo.push(0); rowHi.push(INF); }
+        else if (type === 'E') { rowLo.push(0); rowHi.push(0); }
+        else { rowLo.push(NEG_INF); rowHi.push(INF); }
         break;
       }
 

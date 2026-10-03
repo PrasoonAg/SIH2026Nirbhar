@@ -239,6 +239,31 @@ export function ipmSolve(model: Model, options: IPMOptions = {}): EngineResult {
   const escalations: string[] = [];
   const solvePathComponents: string[] = ['ipm-mehrotra-v1'];
 
+  // Check positive semidefiniteness of Q for QP
+  if (model.Q) {
+    for (let j = 0; j < model.nCols; j++) {
+      for (let k = model.Q.Qp[j]; k < model.Q.Qp[j + 1]; k++) {
+        if (model.Q.Qi[k] === j && model.Q.Qv[k] < -1e-9) {
+          return {
+            status: 'UNSUPPORTED',
+            objective: NaN,
+            lowerBound: NaN,
+            gap: NaN,
+            x: new Float64Array(model.nCols),
+            y: new Float64Array(model.nRows),
+            rc: new Float64Array(model.nCols),
+            iterations: 0,
+            timeMs: performance.now() - t0,
+            maxPrimalViol: 0,
+            maxDualViol: 0,
+            escalations: ['PSD check failed: Q is not positive semidefinite (negative diagonal entry q_c < 0)'],
+            solvePathComponents: ['psd-refusal'],
+          };
+        }
+      }
+    }
+  }
+
   const std = buildStandardForm(model);
   const { m, n, nOrig, A, b, c, qDiag, shift } = std;
 

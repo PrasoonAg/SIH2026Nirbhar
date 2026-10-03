@@ -108,8 +108,8 @@ export class ModelBuilder {
     const idx = this.rows.length;
     let lo: number, hi: number;
     switch (type) {
-      case 'L': lo = NEG_INF; hi = INF; break;
-      case 'G': lo = NEG_INF; hi = INF; break;
+      case 'L': lo = NEG_INF; hi = 0; break;
+      case 'G': lo = 0; hi = INF; break;
       case 'E': lo = 0; hi = 0; break;
       default:  lo = NEG_INF; hi = INF; break;
     }
@@ -286,6 +286,35 @@ export class ModelBuilder {
       parseErrors: [...this.parseErrors],
     } as Model);
   }
+}
+
+/** Deep clone an immutable Model into a new mutable or modified Model */
+export function cloneModel(model: Model): Model {
+  return {
+    ...model,
+    c: new Float64Array(model.c),
+    colLo: new Float64Array(model.colLo),
+    colHi: new Float64Array(model.colHi),
+    rowLo: new Float64Array(model.rowLo),
+    rowHi: new Float64Array(model.rowHi),
+    integrality: new Uint8Array(model.integrality),
+    rowNames: [...model.rowNames],
+    colNames: [...model.colNames],
+    A: {
+      m: model.A.m,
+      n: model.A.n,
+      Ap: new Int32Array(model.A.Ap),
+      Ai: new Int32Array(model.A.Ai),
+      Av: new Float64Array(model.A.Av),
+    },
+    At: {
+      m: model.At.m,
+      n: model.At.n,
+      Cp: new Int32Array(model.At.Cp),
+      Ci: new Int32Array(model.At.Ci),
+      Cv: new Float64Array(model.At.Cv),
+    },
+  };
 }
 
 /** Compute row-wise Ax and check bounds — returns max violation */

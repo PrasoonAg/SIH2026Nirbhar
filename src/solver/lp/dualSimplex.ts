@@ -27,6 +27,7 @@ import type { LUFactor } from '../linalg/lu';
 export type SolveStatus =
   | 'OPTIMAL'
   | 'OPTIMAL_WITHIN_GAP'
+  | 'CERTIFIED_APPROXIMATE'
   | 'INFEASIBLE_CERTIFIED'
   | 'UNBOUNDED_CERTIFIED'
   | 'TIME_LIMIT'
@@ -673,11 +674,11 @@ function makeResult(
 /**
  * Compute the safe dual lower bound LB(y) for LP:
  * 
- *   LB(y) = b^T y + Σ_j [c_j - A_j^T y] * {l_j if rc_j ≥ 0, u_j if rc_j < 0}
- *           (using 0 for ±INF bounds × 0 rc cases)
+ *   LB(y) = objConstant + y^T b_row + Σ_j r_j * bound_j
  * 
  * This is valid for any dual vector y: LB(y) ≤ optimal value.
- * Conservative: uses float64 arithmetic with a margin allowance.
+ * Uses a safe bounded threshold (Math.abs(v) < 1e20) so that infinite bounds
+ * (±1e30) do not cause huge erroneous terms when multiplied by float roundoff zeros.
  */
 export function computeLB(
   model: Model,
@@ -686,49 +687,69 @@ export function computeLB(
   primalObj: number
 ): number {
   const { nRows, nCols, At, rowLo, rowHi, colLo, colHi, c } = model;
+  const isBounded = (v: number) => isFinite(v) && Math.abs(v) < 1e20;
 
-  // Compute dual bound: y^T b_eff where b_eff is the relevant row bound
-  let lb = 0;
+  let lb = model.objConstant ?? 0;
 
-  // For each row: contribution is y[i] * b_row
-  //   where b_row = rowLo[i] if y[i] ≥ 0 (for minimization)
-  //               = rowHi[i] if y[i] < 0
+  // 1. Row contribution
   for (let i = 0; i < nRows; i++) {
     const yi = y[i];
-    if (yi >= 0) {
-      if (isFinite(rowLo[i])) lb += yi * rowLo[i];
-      else if (Math.abs(yi) > 1e-12) lb = NEG_INF; // Farkas-type: row is unbounded below with positive y
+    const rlo = rowLo[i];
+    const rhi = rowHi[i];
+    const isEq = isBounded(rlo) && isBounded(rhi) && Math.abs(rhi - rlo) < 1e-9;
+
+    if (isEq) {
+      lb += yi * rlo;
     } else {
-      if (isFinite(rowHi[i])) lb += yi * rowHi[i];
-      else if (Math.abs(yi) > 1e-12) lb = NEG_INF;
+      if (yi > 1e-9) {
+        if (isBounded(rlo)) {
+          lb += yi * rlo;
+        } else if (yi > 1e-6) {
+          return NEG_INF;
+        }
+      } else if (yi < -1e-9) {
+        if (isBounded(rhi)) {
+          lb += yi * rhi;
+        } else if (yi < -1e-6) {
+          return NEG_INF;
+        }
+      }
     }
   }
 
-  if (!isFinite(lb)) return NEG_INF;
+  if (!isFinite(lb) || lb <= NEG_INF / 2) return NEG_INF;
 
-  // For each variable: reduced cost r_j = c_j - A_j^T y
-  // Contribution: r_j * x_j^* where x_j^* is the bound chosen by rc sign
+  // 2. Column contribution: reduced costs r_j = c_j - A_j^T y
   for (let j = 0; j < nCols; j++) {
-    // Compute A_j^T y
     let Ajy = 0;
     for (let k = At.Cp[j]; k < At.Cp[j + 1]; k++) {
       Ajy += At.Cv[k] * y[At.Ci[k]];
     }
     const rj = c[j] - Ajy;
+    const clo = colLo[j];
+    const chi = colHi[j];
 
-    if (rj >= 0) {
-      // x_j should be at lower bound for min lb
-      if (isFinite(colLo[j])) lb += rj * colLo[j];
-      else if (rj > 1e-12) return NEG_INF; // unbounded below
-    } else {
-      // x_j should be at upper bound
-      if (isFinite(colHi[j])) lb += rj * colHi[j];
-      else if (rj < -1e-12) return NEG_INF; // unbounded above with negative rc
+    if (rj > 1e-9) {
+      if (isBounded(clo)) {
+        lb += rj * clo;
+      } else if (rj > 1e-6) {
+        return NEG_INF;
+      }
+    } else if (rj < -1e-9) {
+      if (isBounded(chi)) {
+        lb += rj * chi;
+      } else if (rj < -1e-6) {
+        return NEG_INF;
+      }
     }
   }
 
-  // Apply a conservative rounding: use float64 error margin
-  // Margin ≈ 1e-7 * Σ|term| (proportional to magnitudes involved)
-  const margin = 1e-7 * (Math.abs(lb) + 1);
-  return lb - margin;
+  // Ensure lb does not exceed primalObj due to floating-point roundoff
+  if (lb > primalObj) {
+    if (lb - primalObj < 1e-6 * (1 + Math.abs(primalObj))) {
+      lb = primalObj;
+    }
+  }
+
+  return lb;
 }

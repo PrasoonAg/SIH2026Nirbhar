@@ -13,8 +13,7 @@
       "referenceObjective": -464.7531428571,
       "source": "Netlib LP collection",
       "split": "tune",
-      "status": "placeholder",
-      "note": "Drop decompressed afiro.mps into public/samples/ to activate. Placeholder used until then."
+      "status": "ready"
     },
     {
       "name": "sc50a",
@@ -28,8 +27,7 @@
       "referenceObjective": -64.57507705856,
       "source": "Netlib LP collection",
       "split": "tune",
-      "status": "placeholder",
-      "note": "Drop decompressed sc50a.mps into public/samples/ to activate."
+      "status": "ready"
     },
     {
       "name": "sc50b",
@@ -40,10 +38,10 @@
       "nnz": 119,
       "integers": 0,
       "q_nnz": 0,
-      "referenceObjective": -70.0,
+      "referenceObjective": -70,
       "source": "Netlib LP collection",
       "split": "tune",
-      "status": "placeholder"
+      "status": "ready"
     },
     {
       "name": "sc105",
@@ -57,7 +55,7 @@
       "referenceObjective": -52.20206121171,
       "source": "Netlib LP collection",
       "split": "tune",
-      "status": "placeholder"
+      "status": "ready"
     },
     {
       "name": "kb2",
@@ -71,7 +69,7 @@
       "referenceObjective": -1749.900129,
       "source": "Netlib LP collection",
       "split": "tune",
-      "status": "placeholder"
+      "status": "ready"
     },
     {
       "name": "adlittle",
@@ -85,7 +83,7 @@
       "referenceObjective": 225494.9631623,
       "source": "Netlib LP collection",
       "split": "report",
-      "status": "placeholder"
+      "status": "ready"
     },
     {
       "name": "blend",
@@ -99,7 +97,7 @@
       "referenceObjective": -30.81214985,
       "source": "Netlib LP collection",
       "split": "report",
-      "status": "placeholder"
+      "status": "ready"
     },
     {
       "name": "share2b",
@@ -113,7 +111,7 @@
       "referenceObjective": -415.7322407,
       "source": "Netlib LP collection",
       "split": "report",
-      "status": "placeholder"
+      "status": "ready"
     },
     {
       "name": "stocfor1",
@@ -127,7 +125,7 @@
       "referenceObjective": -41131.97622,
       "source": "Netlib LP collection",
       "split": "report",
-      "status": "placeholder"
+      "status": "ready"
     },
     {
       "name": "recipe",
@@ -141,7 +139,7 @@
       "referenceObjective": -266.616,
       "source": "Netlib LP collection",
       "split": "report",
-      "status": "placeholder"
+      "status": "ready"
     },
     {
       "name": "p0033",
@@ -152,7 +150,7 @@
       "nnz": null,
       "integers": null,
       "q_nnz": 0,
-      "referenceObjective": 3089.0,
+      "referenceObjective": 3089,
       "source": "MIPLIB-style",
       "split": "report",
       "status": "placeholder",
@@ -167,7 +165,7 @@
       "nnz": null,
       "integers": null,
       "q_nnz": 0,
-      "referenceObjective": 18.0,
+      "referenceObjective": 18,
       "source": "MIPLIB-style",
       "split": "report",
       "status": "placeholder"
@@ -195,7 +193,7 @@
       "nnz": null,
       "integers": null,
       "q_nnz": 0,
-      "referenceObjective": 1120.0,
+      "referenceObjective": 1120,
       "source": "MIPLIB-style",
       "split": "report",
       "status": "placeholder"
