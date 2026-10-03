@@ -1,0 +1,3 @@
+[console_scripts]
+nirbhar = nirbhar.cli:main
+nirbhar-verify = nirbhar_verify.cli:main
