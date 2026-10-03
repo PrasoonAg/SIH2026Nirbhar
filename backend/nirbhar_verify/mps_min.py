@@ -88,12 +88,13 @@ def parse_mps_min(path: str | Path) -> MinModel:
         line = raw_line.rstrip()
         if not line.strip() or line.startswith("*") or line.startswith("$"):
             continue
-        tok = line.lstrip().split()[0].upper()
-        if tok in SECTIONS:
-            section = tok
-            if section == "ENDATA":
-                break
-            continue
+        if not raw_line.startswith((" ", "\t")):
+            tok = line.split()[0].upper()
+            if tok in SECTIONS:
+                section = tok
+                if section == "ENDATA":
+                    break
+                continue
 
         parts = line.lstrip().split()
         if section == "OBJSENSE":

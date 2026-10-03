@@ -1,1 +1,0 @@
-"""selfaudit tests package."""

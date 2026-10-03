@@ -5,6 +5,8 @@ Shared fixtures: loads data/manifest.json and parametrises models by tier/class.
 Manifest schema (actual):
   name, file, class_, rows, cols, nnz, integers, reference_objective,
   sense, ref_source, split, tier, sha256, highs_time_s, origin
+
+Tier naming in manifest: T1-tiny, T2-small, T3-stretch, S1-degenerate, S2-illconditioned-*
 """
 
 from __future__ import annotations
@@ -46,20 +48,43 @@ def manifest() -> list[dict]:
 
 @pytest.fixture(scope="session")
 def netlib_t1(manifest: list[dict]) -> list[dict]:
+    """T1-tiny LP models (pure LP, no integers)."""
     return [m for m in manifest
-            if m.get("tier") == "T1" and m.get("class_") == "LP"]
+            if m.get("tier", "").startswith("T1") and m.get("class_") == "LP"]
 
 
 @pytest.fixture(scope="session")
 def netlib_t2(manifest: list[dict]) -> list[dict]:
+    """T2-small LP models."""
     return [m for m in manifest
-            if m.get("tier") == "T2" and m.get("class_") == "LP"]
+            if m.get("tier", "").startswith("T2") and m.get("class_") == "LP"]
 
 
 @pytest.fixture(scope="session")
 def milp_t1(manifest: list[dict]) -> list[dict]:
+    """T1-tiny MILP/MIP models."""
     return [m for m in manifest
-            if m.get("tier") == "T1" and m.get("class_") in ("MILP", "MIP")]
+            if m.get("tier", "").startswith("T1")
+            and m.get("class_") in ("MILP", "MIP")]
+
+
+@pytest.fixture(scope="session")
+def stress_s1(manifest: list[dict]) -> list[dict]:
+    """S1 degenerate/cycling stress models."""
+    return [m for m in manifest if m.get("tier", "").startswith("S1")]
+
+
+@pytest.fixture(scope="session")
+def stress_s2(manifest: list[dict]) -> list[dict]:
+    """S2 ill-conditioned stress models."""
+    return [m for m in manifest if m.get("tier", "").startswith("S2")]
+
+
+@pytest.fixture(scope="session")
+def infeas_models(manifest: list[dict]) -> list[dict]:
+    """Infeasible/unbounded status models."""
+    return [m for m in manifest
+            if m.get("class_") in ("INFEASIBLE", "UNBOUNDED", "STATUS")]
 
 
 def model_path(entry: dict) -> Path:

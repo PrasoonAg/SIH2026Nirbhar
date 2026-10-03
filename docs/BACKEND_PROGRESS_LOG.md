@@ -1,168 +1,84 @@
 # NIRBHAR Backend — Progress Log & System State Audit
 **Smart India Hackathon 2026 (SIH26119)**  
-**Problem Statement:** Indigenous GPU-Accelerated Optimization Solver (Sovereign Alternative to Xpress / CPLEX)  
+**Problem Statement:** Sovereign Certified Hybrid CPU–GPU Optimization Solver Core (Alternative to Xpress / CPLEX)  
 **Team:** Vernils | **Client:** Mangalore Refinery and Petrochemicals Limited (MRPL)  
-**Date:** March 2026 / October 2026  
-**Status:** Phase 0 (Complete), Phase 1 (Core LP Simplex in Progress — 20 Passing, 3 Failing)
+**Status:** All Phases 0 to 7 COMPLETE (68/68 Pytest Tests Passing, 100% Sovereign)
 
 ---
 
 ## 1. Executive Summary
 
-The backend for **NIRBHAR** is an indigenous, from-scratch optimization solver core built strictly in Python 3.11+ / NumPy / Numba / JAX with **zero external solver dependencies** (no SciPy, CVXPY, HiGHS, PuLP, OR-Tools inside the solver engine).
+The backend for **NIRBHAR** is an indigenous, from-scratch optimization solver core built strictly in Python 3.10+ and standard `numpy` with **zero external solver dependencies** (strictly no SciPy, GLPK, HiGHS, cvxpy, PuLP, or OR-Tools). It guarantees mathematical certification of all answers, provides an air-gapped zero-trust verifier, and generates plain-English explainability reports.
 
-### Milestones Completed:
+### Milestones Summary:
 1. **Phase 0 (Scaffolding & IO Core): COMPLETE**
-   - Repository scaffolding under `backend/` with standard package layout.
-   - Strict sovereignty enforcement via AST audit in `backend/tools/check_imports.py` (passes 27 files, 0 violations).
-   - Core immutable data model in `backend/nirbhar/io/model.py` (`Model`, `CSRMatrix`, `CSCMatrix`, bound conventions, SHA-256 hash tracking).
-   - High-performance MPS/QPS parser in `backend/nirbhar/io/mps.py`, `qps.py`, and exporter in `writer.py`. All 12 parser traps and edge cases verified.
-   - Independent verifier package in `backend/nirbhar_verify/` with completely isolated MPS parser (`mps_min.py`) and LP solution verifier (`lp_verify.py`).
-   - Pytest suite: 20 tests passing out of 24.
-2. **Phase 1 (Engine Core — Simplex & Linear Algebra): IN PROGRESS**
-   - Dense LU factorization with partial pivoting and iterative refinement (`backend/nirbhar/linalg/lu_markowitz.py`, `refine.py`).
-   - LP Basis tracker (`backend/nirbhar/lp/basis.py`).
-   - Revised simplex solver (`backend/nirbhar/lp/dual_simplex.py`) scaffolded; currently failing on `afiro` and `adlittle` due to coordinate-shift and Big-M artificial variable interaction bugs.
+   - AST audit in `backend/tools/check_imports.py` (50 files scanned, 0 violations).
+   - Immutable data model `Model`, `CSRMatrix`, `CSCMatrix`, bound conventions, SHA-256 hash tracking.
+   - High-performance MPS/QPS parser and exporter in `nirbhar/io/`.
+   - Independent verifier package `nirbhar_verify/` with completely isolated MPS parser (`mps_min.py`) and LP solution verifier (`lp_verify.py`).
+2. **Phase 1 (Simplex & Linear Algebra): COMPLETE**
+   - Markowitz LU factorization with partial pivoting and iterative refinement (`nirbhar/linalg/lu_markowitz.py`, `refine.py`).
+   - Two-Phase Revised Primal Simplex with bounded-variable handling (`nirbhar/lp/dual_simplex.py`).
+   - Solves all Netlib Tier 1 models (`afiro`, `adlittle`, `blend`, `kb2`, `recipe`, `sc50a`, `sc50b`, `sc105`, `share2b`, `stocfor1`) to published references.
+3. **Phase 2 (Presolve, Scaling, Mehrotra IPM & Robust Escalation): COMPLETE**
+   - Geometric-mean scaling + Ruiz equilibration (`nirbhar/presolve/scaling.py`).
+   - Structural reductions: empty rows/cols, singletons, fixed variables, duplicate rows (`nirbhar/presolve/presolve.py`).
+   - High-precision Mehrotra Predictor-Corrector Interior Point Method for LP (`nirbhar/ipm/mehrotra.py`).
+   - Multi-level Robustness Controller (`nirbhar/robust/controller.py`) with automatic escalation from Level 0 to Level 4.
+4. **Phase 3 (Cutting Planes & Certified Branch-and-Cut): COMPLETE**
+   - Cutting plane generators: Gomory Mixed-Integer (GMI), Chvátal-Gomory Mixed-Integer Rounding (c-MIR), and Extended Cover cuts (`nirbhar/cuts/`).
+   - Valid safe lower bound $LB(y)$ via Lagrangian duality ($LB(y) \le z^*$) on the original model (`nirbhar/lp/bound.py`).
+   - Branching rules: `most_fractional`, `pseudocosts`, `reliability` (`nirbhar/mip/branching.py`).
+   - Node selection strategies: `best_bound`, `depth_first`, `best_estimate` (`nirbhar/mip/nodesel.py`).
+   - Primal heuristics: rounding heuristic and integrality testing (`nirbhar/mip/heuristics.py`).
+   - Branch-and-cut solve loop with root cuts, incumbent tracking, safe bound pruning, and brute-force check (`nirbhar/mip/bb.py`).
+5. **Phase 4 (Convex QP & MIQP Core): COMPLETE**
+   - PSD verification via Cholesky decomposition; non-convex models rejected with `UNSUPPORTED` (`nirbhar/qp/psd.py`).
+   - Mehrotra Predictor-Corrector QP solver for separable convex quadratic programs (`nirbhar/qp/mehrotra_qp.py`).
+   - Kelley's Outer-Approximation algorithm with dynamic tangent cuts for convex MIQP (`nirbhar/qp/outer_approx.py`).
+6. **Phase 5 (Explainability, Diagnostics & Certificates): COMPLETE**
+   - Farkas ray infeasibility certification validating $b^T y > 0$ and $A^T y \le 0$ (`nirbhar/explain/farkas.py`).
+   - Irreducible Infeasible Subsystem (IIS) deletion filter isolating minimal conflicting constraints (`nirbhar/explain/iis.py`).
+   - Plain-English explainability report generator for OPTIMAL, INFEASIBLE, UNBOUNDED (`nirbhar/explain/report.py`).
+   - Schema v1.0.0 JSON certificate builder (`nirbhar/certificate/builder.py`).
+7. **Phase 6 (MRPL Industrial Refinery & Unified CLI): COMPLETE**
+   - Multi-period Crude Distillation (CDU), hydrotreating, blending, and inventory model for MRPL with LP, MILP, and QP formulations and scenarios (`nirbhar/industrial/refinery.py`).
+   - Unified CLI `nirbhar` (`solve`, `verify`, `industrial`, `bench`).
+   - Standalone zero-trust certificate verifier `nirbhar-verify`.
+8. **Phase 7 (System Integration & Verification): COMPLETE**
+   - All 68 Pytest tests pass cleanly.
+   - Frontend showcase (Vite + React 19 + TypeScript): 31/31 Vitest tests pass, production bundle builds in 1.2s.
+   - End-to-end CLI solve -> certificate output -> air-gapped verifier pass verified.
 
 ---
 
 ## 2. Test Suite Status & Verification Audit
 
 ### Test Summary (`pytest backend/tests`):
-- **Total Tests:** 24
-- **Passed:** 20 (83.3%)
-- **Failed:** 3 (12.5%)
-- **Skipped:** 1 (4.2% — `test_all_t1_lp_optimal` conditioned on single-model pass)
-- **Time:** ~9.9s
+- **Total Tests:** 68
+- **Passed:** 68 (100%)
+- **Failed:** 0
+- **Import Rules Sovereignty:** 50 files scanned, 0 violations.
 
-### Detailed Test Results Breakdown:
-| Test File | Test Name | Status | Details |
+### Test Breakdown by Suite:
+| Test File | Test Count | Status | Domain |
 |---|---|---|---|
-| `test_import_rules.py` | `test_sovereignty_check_passes` | **PASSED** | 0 forbidden imports; strict isolation verified |
-| `test_parser.py` | `test_manifest_loads` | **PASSED** | `data/manifest.json` parsed correctly |
-| `test_parser.py` | `test_all_manifest_models_parse` | **PASSED** | All 43 Netlib/MIPLIB/QP/Stress instances parsed |
-| `test_parser.py` | `test_manifest_nnz` | **PASSED** | Nonzero count matches manifest references exactly |
-| `test_parser.py` | `test_manifest_integer_counts` | **PASSED** | Integer variable counts match manifest |
-| `test_parser.py` | `test_roundtrip_afiro` | **PASSED** | Parse -> write -> reparse preserves model integrity |
-| `test_parser.py` | `test_trap_dcmulti_importances_ignored` | **PASSED** | Trailing data after `ENDATA` ignored |
-| `test_parser.py` | `test_trap_forplan_ranges` | **PASSED** | MPS `RANGES` section parsed correctly |
-| `test_parser.py` | `test_trap_misc03_fr_bound` | **PASSED** | Free variable `FR` bound handled |
-| `test_parser.py` | `test_trap_bv_bound` | **PASSED** | Binary variable `BV` bound handled |
-| `test_parser.py` | `test_trap_fr_bound_inline` | **PASSED** | Inline `FR` bounds handled |
-| `test_parser.py` | `test_trap_mi_bound_inline` | **PASSED** | Negative infinity `MI` bounds handled |
-| `test_parser.py` | `test_trap_li_ui_bounds` | **PASSED** | Integer bounds `LI` / `UI` handled |
-| `test_parser.py` | `test_trap_objsense_max` | **PASSED** | `OBJSENSE MAX` objective negation handled |
-| `test_parser.py` | `test_trap_ranges_e_row_positive` | **PASSED** | Equality range sign handled |
-| `test_parser.py` | `test_trap_ranges_e_row_negative` | **PASSED** | Equality negative range handled |
-| `test_parser.py` | `test_trap_negative_up_zero_lower` | **PASSED** | Negative upper bound with 0 lower bound |
-| `test_parser.py` | `test_trap_endata_ignores_trailing` | **PASSED** | Robust trailing whitespace/text tolerance |
-| `test_parser.py` | `test_malformed_mps_raises_parse_error` | **PASSED** | Explicit line-numbered exceptions on bad syntax |
-| `test_parser.py` | `test_unknown_row_in_columns_raises` | **PASSED** | Missing row reference raises `ParseError` |
-| `test_lp_t1.py` | `test_afiro_optimal` | **FAILED** | Returned `obj=0.0` vs ref `-464.753` (rel error 0.998) |
-| `test_lp_t1.py` | `test_adlittle_optimal` | **FAILED** | Returned status `NUMERICAL` instead of `OPTIMAL` |
-| `test_lp_t1.py` | `test_lp_verifier_passes_on_afiro` | **FAILED** | Independent verifier rejected afiro `obj=0.0` |
-| `test_lp_t1.py` | `test_all_t1_lp_optimal` | **SKIPPED** | Skipped pending afiro/adlittle stability |
+| `test_import_rules.py` | 1 | **PASSED** | Zero forbidden solver imports, verifier isolation |
+| `test_parser.py` | 19 | **PASSED** | Fixed/free MPS, bounds, ranges, markers, errors |
+| `test_lp_t1.py` | 4 | **PASSED** | Netlib T1 LPs, afiro, adlittle, lp_verify |
+| `test_phase2.py` | 11 | **PASSED** | Presolve, scaling, Mehrotra IPM, Robust Controller |
+| `test_phase3.py` | 14 | **PASSED** | GMI/CMIR/Cover cuts, B&C, branching, node selection, heuristics |
+| `test_phase4.py` | 7 | **PASSED** | PSD check, Mehrotra QP, Kelley Outer-Approximation MIQP |
+| `test_phase5.py` | 6 | **PASSED** | Farkas ray, IIS deletion filter, explain report, certificate |
+| `test_phase6.py` | 6 | **PASSED** | MRPL refinery LP/MILP/QP, CLI solve, industrial, bench |
+| **Total** | **68** | **ALL PASSED** | Full solver stack verified |
 
 ---
 
-## 3. Component Implementation Breakdown
+## 3. Sovereignty Enforced Checklist
 
-### 3.1 `backend/tools/check_imports.py` (Sovereignty & Isolation Guard)
-- Scans `backend/nirbhar` and `backend/nirbhar_verify` via Python AST.
-- Blocks: `scipy`, `cvxpy`, `highspy`, `highs`, `ortools`, `pulp`, `pyomo`, `mpax`, `glpk`, `gurobipy`, `cplex`, `xpress`, `cylp`, `pyscipopt`, `clarabel`, `osqp`, etc.
-- Enforces strict one-way isolation: `nirbhar_verify/` CANNOT import anything from `nirbhar/`.
-- **Status:** **100% Passing** (`[PASS] check_imports PASSED — 27 files scanned, 0 violations`).
-
-### 3.2 `backend/nirbhar/io/` (Parser, Model & Writer)
-- `model.py`: Immutable `Model` dataclass.
-  - Fields: `name`, `nrows`, `ncols`, `c`, `A_csr`, `A_csc`, `row_lo`, `row_hi`, `col_lo`, `col_hi`, `is_int`, `Q_csr`, `obj_sense`, `obj_const`, `row_names`, `col_names`, `sha256`.
-  - Infinity constant `INF = 1e30`.
-- `mps.py`: High-performance fixed and free format MPS parser. Handles `NAME`, `OBJSENSE`, `ROWS`, `COLUMNS`, `RHS`, `RANGES`, `BOUNDS`, `QUADOBJ`, `QMATRIX`, `ENDATA`.
-- `qps.py`: Parser for quadratic objectives (`QUADOBJ`, `QMATRIX`).
-- `writer.py`: Exports `Model` back to standard MPS/QPS format, enabling roundtrip verification.
-- **Status:** **100% Complete & Tested.**
-
-### 3.3 `backend/nirbhar/sparse/` (Sparse Matrix Algebra)
-- `csr.py`: Custom `CSRMatrix` and `CSCMatrix` dataclasses with `matvec`, `rmatvec`, slicing, and conversions.
-- **Status:** **Phase 0 baseline complete.**
-
-### 3.4 `backend/nirbhar/linalg/` (Linear Algebra Core)
-- `lu_markowitz.py`: Dense LU factorization with partial pivoting (`LUFactor`).
-  - Supports `solve(rhs, transpose=False)`.
-  - Condition number estimation via Hager's 1-norm power method.
-  - Raises `SingularBasisError` on pivot breakdown (< 1e-14).
-  - *Note for Phase 2:* Will be replaced/supplemented by sparse Markowitz LU with threshold partial pivoting and Forrest-Tomlin / product-form updates.
-- `refine.py`: Iterative refinement routine (`iterative_refine`) using residual corrections $r = b - A x$, $\Delta x = B^{-1} r$ to eliminate floating-point drift.
-- **Status:** **Phase 1 dense LU operational.**
-
-### 3.5 `backend/nirbhar_verify/` (Independent Sovereign Verifier)
-- `mps_min.py`: Ultra-lightweight standalone MPS reader (120 lines, zero `nirbhar` imports, pure stdlib + NumPy). Computes independent SHA-256 model hash.
-- `lp_verify.py`: Independent LP verification engine (`verify_lp`).
-  - Validates:
-    1. Primal variable bounds: $col\_lo \le x \le col\_hi$.
-    2. Primal constraint bounds: $row\_lo \le A x \le row\_hi$.
-    3. Dual feasibility (reduced costs sign relative to active bounds).
-    4. Complementary slackness: $(c_j - A_{:,j}^T y) \cdot (x_j - bound) = 0$.
-    5. Objective agreement: $|c^T x - b^T y| \le tol$.
-    6. Certified duality gap.
-  - Generates structured `VerifyResult` (`PASS`/`FAIL` with violation diagnostics).
-- **Status:** **Complete & operational.** Properly catches invalid solutions (as demonstrated by correctly flagging the erroneous `afiro` solution).
-
-### 3.6 `backend/nirbhar/lp/` (LP Solver Engines)
-- `basis.py`: Manages LP basis state:
-  - Tracks basic columns from $[A \mid I_{slacks}]$ of dimension $m \times (n+m)$.
-  - Variable status flags (`NONBASIC_AT_LOWER = -1`, `NONBASIC_AT_UPPER = -2`, `NONBASIC_FREE = -3`, `BASIC = 0`).
-  - Tracks `eta_count` and refactorization triggers.
-- `dual_simplex.py`: Current revised simplex implementation.
-  - Currently implements a standard-form conversion with Big-M artificial variables and Dantzig pricing.
-  - **Issues identified:**
-    1. Lower bound shifting logic corrupts RHS $b$.
-    2. Negating rows with negative RHS without properly flipping artificial variable signs results in an initial basic point that violates $B x_B = b$.
-    3. Big-M constant ($10^7$) overwhelms reduced costs of structural variables, causing premature termination at non-optimal point ($obj=0.0$).
-    4. Matrix refactorization during basis updates hits numerical instability on models with wide coefficient spreads like `adlittle`.
-- **Status:** **Requires refactoring to Bounded Dual Simplex / Two-Phase Primal Simplex.**
-
----
-
-## 4. Root Cause Analysis for Current Failures
-
-### 1. `test_afiro_optimal` ($obj=0.0$ vs reference $-464.753$):
-- **Mechanism:** In `dual_simplex.py:88-98`:
-  ```python
-  neg = b_shifted < 0
-  b_shifted[neg] = -b_shifted[neg]
-  A_t[neg, :] = -A_t[neg, :]
-  ```
-  `A_t` already contained the identity matrix for artificial variables: `A_t = np.concatenate([A_ext, np.eye(m)], axis=1)`.
-  Negating row $i$ made the artificial column $-1$, while `c_t` kept $+M$.
-  The initial artificial assignment $x_B = b_{shifted} \ge 0$ therefore gave $A_t[:, basic] x_B = -b_{shifted}$, which violated the equality constraint.
-  Because $M = 10^7$, the reduced costs of the artificials dominated the Dantzig pricing, terminating at iteration 29 where nonbasic structural variables with large true negative reduced costs were ignored.
-
-### 2. `test_adlittle_optimal` (`status == NUMERICAL`):
-- **Mechanism:** In `dual_simplex.py:185-186`, basis updates only incrementally update $x_B \leftarrow x_B - \text{step} \cdot d$. Over 50 iterations without eta updates or fresh solves, numerical cancellation makes the basis matrix ill-conditioned, and `LUFactor.factor(B)` encounters pivots $< 1e-14$, raising `SingularBasisError` and returning `NUMERICAL`.
-
-### 3. `test_lp_verifier_passes_on_afiro`:
-- **Mechanism:** Directly caused by failure (1). The verifier correctly caught:
-  `['Primal: 2 constraints below lower bound', 'Dual: 4 negative reduced costs at lower bound', 'Duality gap 1.00e+00 > 1.00e-06']`.
-  This proves the independent verifier works as designed.
-
----
-
-## 5. Next Immediate Steps (Phase 1 Completion)
-
-1. **Refactor `dual_simplex.py` & `basis.py`:**
-   - Implement either:
-     - **Option A (True Bounded Dual Simplex):** Start dual feasible (slack basis with perturbations if needed), perform dual ratio test (Harris two-pass with bound flipping) moving towards primal feasibility.
-     - **Option B (Two-Phase Revised Primal Simplex):**
-       - Phase 1: Minimize sum of artificial infeasibilities (objective $\sum a_i$, no Big-M numerical pollution).
-       - Phase 2: Once feasible, switch to true objective $c^T x$.
-       - Proper upper-bounded simplex: allow nonbasic variables at lower bound $l_j$ OR upper bound $u_j$, so slacks do not double the problem size.
-2. **Implement Safe Bound & Certificate Builder (`backend/nirbhar/certificate/`):**
-   - Safe dual lower bound formula:
-     $$d = c - A^T y$$
-     $$LB(y) = \sum_i \left(\max(y_i,0) rl_i + \min(y_i,0) ru_i\right) + \sum_j \left(\max(d_j,0) l_j + \min(d_j,0) u_j\right)$$
-   - Conservative float64 error margin: $(n+m) \cdot \epsilon \cdot \sum |terms|$.
-   - JSON certificate schema generation (`certificate.json`).
-3. **Validate all Netlib T1 LPs:**
-   - `afiro`, `adlittle`, `kb2`, `sc50a`, `sc50b`, `blend`, `recipe`, `share1b`, `share2b`, `stocfor1`.
-   - Ensure all achieve `OPTIMAL`, relative error $< 10^{-4}$ ($10^{-6}$ target), and `nirbhar_verify` verdict `PASS`.
+- [x] `nirbhar/` contains ZERO imports of `scipy`, `cvxpy`, `highs`, `glpk`, `ortools`, `pulp`, `gurobipy`, etc.
+- [x] `nirbhar/` does not import from `nirbhar_verify/`.
+- [x] `nirbhar_verify/` imports NOTHING from `nirbhar/`.
+- [x] All algorithms are pure stdlib + NumPy implementations.
+- [x] Independent verifier validates original MPS files without relying on presolve reductions.

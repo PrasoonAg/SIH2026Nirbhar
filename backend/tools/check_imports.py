@@ -136,12 +136,12 @@ def run_audit(emit_json: bool = False) -> int:
         print(json.dumps(result, indent=2))
     else:
         if all_violations:
-            print(f"\n[FAIL]  check_imports FAILED — {len(all_violations)} violation(s) in {files_scanned} files\n")
+            print(f"\n[FAIL]  check_imports FAILED - {len(all_violations)} violation(s) in {files_scanned} files\n")
             for v in all_violations:
-                print(f"  {v['file']}:{v['line']}  →  {v['issue']}")
+                print(f"  {v['file']}:{v['line']}  ->  {v['issue']}")
             print()
         else:
-            print(f"\n[PASS]  check_imports PASSED — {files_scanned} files scanned, 0 violations.\n")
+            print(f"\n[PASS]  check_imports PASSED - {files_scanned} files scanned, 0 violations.\n")
             print("Sovereignty rules enforced:")
             print("  [OK] nirbhar/ imports no forbidden solver/numeric library")
             print("  [OK] nirbhar/ does not import from nirbhar_verify/")

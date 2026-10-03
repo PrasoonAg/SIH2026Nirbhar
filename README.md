@@ -40,8 +40,8 @@ Modern critical industrial infrastructure in India — from crude distillation s
 **NIRBHAR is 100% indigenous and sovereign.**
 - **Zero Third-Party Solver Imports**: Strictly **no SciPy, GLPK, HiGHS, cvxpy, COIN-OR, or PuLP**. Every linear algebra routine, simplex pivot, IPM iteration, and cutting plane generator is written from first principles.
 - **Dual-Surface Delivery**:
-  - **High-Performance Python Core (`NIRBHAR/backend/`)**: Vectorized pure NumPy buffers, multi-level robust controllers, and full CLI tooling.
-  - **Browser Showcase Prototype (`NIRBHAR/`)**: 100% client-side computation running in Web Workers (`engine.worker.ts`) using `Float64Array` typed buffers with zero backend calls.
+  - **High-Performance Python Core (`backend/`)**: Vectorized pure NumPy buffers, multi-level robust controllers, and full CLI tooling.
+  - **Browser Showcase Prototype (`src/` & `public/`)**: 100% client-side computation running in Web Workers (`engine.worker.ts`) using `Float64Array` typed buffers with zero backend calls.
 - **Certified Answers**: Every answer is paired with a verifiable cryptographic certificate containing dual multipliers, primal-dual bounds, and an independent verifier audit.
 
 ---
@@ -327,7 +327,7 @@ The table below shows real, un-mocked results computed by NIRBHAR's Python core 
 | **`stocfor1`** | 117 | 111 | 447 | `-41131.97622` | `-41131.97622` | $1.77 \times 10^{-14}$ | **MATCH** |
 
 ### Test Breakdown by Domain
-- **Pytest Suite (`NIRBHAR/backend/tests`)**:
+- **Pytest Suite (`backend/tests`)**:
   - `test_import_rules.py`: AST scan confirming 0 forbidden imports.
   - `test_parser.py`: 19 tests validating all MPS/QPS syntax edge cases.
   - `test_lp_t1.py`: 4 tests validating Netlib simplex optimality.
@@ -343,7 +343,7 @@ The table below shows real, un-mocked results computed by NIRBHAR's Python core 
 ## 8. Repository Anatomy & File Layout
 
 ```text
-NIRBHAR/
+SIH2026Nirbhar/
 ├── backend/                             # Python 3.10+ Sovereign Solver Core
 │   ├── nirbhar/                         # Main Solver Package
 │   │   ├── io/                          # Fixed/Free MPS Parser & Exporter

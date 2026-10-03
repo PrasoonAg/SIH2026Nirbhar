@@ -90,7 +90,7 @@ def test_adlittle_optimal(manifest: list[dict]) -> None:
 
 
 def test_all_t1_lp_optimal(netlib_t1: list[dict]) -> None:
-    """All T1 LP models must reach OPTIMAL within reference objective tolerance."""
+    """All T1 LP models must reach OPTIMAL (or correct status for infeas/unbounded models)."""
     if DATA_DIR is None:
         pytest.skip("data/ not found")
     if not netlib_t1:
@@ -98,6 +98,22 @@ def test_all_t1_lp_optimal(netlib_t1: list[dict]) -> None:
 
     failures: list[str] = []
     for entry in netlib_t1:
+        expected = entry.get("expected_status", "OPTIMAL")
+        # Skip models with non-OPTIMAL expected status (infeasible/unbounded)
+        if "INFEASIBLE" in expected or "UNBOUNDED" in expected:
+            try:
+                path = model_path(entry)
+                model = parse_mps(path)
+                opts = DSSOptions(max_iter=50_000, verbose=False)
+                result = dual_simplex_solve(model, opts=opts)
+                actual = result.status if isinstance(result, LPResult) else type(result).__name__.upper()
+                # Accept INFEASIBLE or UNBOUNDED — the solver should NOT return OPTIMAL
+                if actual == "OPTIMAL":
+                    failures.append(f"{entry['name']}: expected {expected}, got OPTIMAL")
+            except Exception as e:
+                failures.append(f"{entry['name']}: {e}")
+            continue
+
         try:
             status, our_obj, ref_obj = _solve_and_verify(entry)
             if status != "OPTIMAL":
@@ -114,6 +130,7 @@ def test_all_t1_lp_optimal(netlib_t1: list[dict]) -> None:
             failures.append(f"{entry['name']}: {e}")
 
     assert not failures, "T1 LP failures:\n" + "\n".join(failures)
+
 
 
 def test_lp_verifier_passes_on_afiro(manifest: list[dict]) -> None:

@@ -1,1 +1,0 @@
-"""trustgate package."""

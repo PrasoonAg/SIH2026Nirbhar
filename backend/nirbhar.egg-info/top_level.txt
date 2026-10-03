@@ -1,2 +1,0 @@
-nirbhar
-nirbhar_verify
