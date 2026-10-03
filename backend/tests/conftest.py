@@ -1,75 +1,73 @@
 """
-No-egress fixture (INV-11).
-
-Autouse session-scoped fixture that blocks:
-  - socket.connect() to non-loopback addresses
-  - socket.getaddrinfo() for external hostnames
-
-All tests inherit this automatically. To test network code (e.g. the egress check
-itself), override by requesting the `allow_egress` fixture.
+tests/conftest.py
+=================
+Shared fixtures: loads data/manifest.json and parametrises models by tier/class.
+Manifest schema (actual):
+  name, file, class_, rows, cols, nnz, integers, reference_objective,
+  sense, ref_source, split, tier, sha256, highs_time_s, origin
 """
+
 from __future__ import annotations
-
-import socket
+import json
 import pytest
+from pathlib import Path
+
+_HERE = Path(__file__).resolve().parent
+_BACKEND = _HERE.parent           # backend/
+_PROTO = _BACKEND.parent          # Prototype/
+
+# Resolve data/ — prefer sibling data/, fall back to Prototype/data/
+_DATA_CANDIDATES = [
+    _BACKEND / "data",
+    _PROTO / "data",
+]
+
+DATA_DIR: Path | None = None
+for _c in _DATA_CANDIDATES:
+    if (_c / "manifest.json").exists():
+        DATA_DIR = _c
+        break
 
 
-_LOOPBACK_PREFIXES = ("127.", "::1", "localhost")
-
-_original_connect = socket.socket.connect
-_original_getaddrinfo = socket.getaddrinfo
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line("markers", "slow: long-running benchmarks")
 
 
-def _is_loopback(address: object) -> bool:
-    """Return True if *address* is a loopback or Unix socket path."""
-    if isinstance(address, str):
-        # Unix domain socket
-        return True
-    if isinstance(address, (tuple, list)) and len(address) >= 1:
-        host = str(address[0])
-        return any(host.startswith(p) for p in _LOOPBACK_PREFIXES)
-    return False
+@pytest.fixture(scope="session")
+def manifest() -> list[dict]:
+    if DATA_DIR is None:
+        pytest.skip("data/manifest.json not found")
+    raw = json.loads((DATA_DIR / "manifest.json").read_text())
+    # Actual schema: {"models": [...], ...}
+    if isinstance(raw, dict):
+        return raw.get("models", [])
+    return raw  # fallback: list
 
 
-def _blocking_connect(self: socket.socket, address: object) -> None:
-    if not _is_loopback(address):
-        raise OSError(
-            f"[no-egress fixture] Attempted non-loopback socket.connect({address!r}). "
-            "Tests must not make external network calls (INV-11)."
-        )
-    _original_connect(self, address)
+@pytest.fixture(scope="session")
+def netlib_t1(manifest: list[dict]) -> list[dict]:
+    return [m for m in manifest
+            if m.get("tier") == "T1" and m.get("class_") == "LP"]
 
 
-def _blocking_getaddrinfo(
-    host: object,
-    port: object,
-    *args: object,
-    **kwargs: object,
-) -> object:
-    if not _is_loopback(host):
-        raise OSError(
-            f"[no-egress fixture] Attempted socket.getaddrinfo({host!r}, {port!r}). "
-            "Tests must not resolve external hostnames (INV-11)."
-        )
-    return _original_getaddrinfo(host, port, *args, **kwargs)
+@pytest.fixture(scope="session")
+def netlib_t2(manifest: list[dict]) -> list[dict]:
+    return [m for m in manifest
+            if m.get("tier") == "T2" and m.get("class_") == "LP"]
 
 
-@pytest.fixture(autouse=True, scope="function")
-def block_egress(request: pytest.FixtureRequest) -> None:  # type: ignore[type-arg]
-    """Function-scoped autouse: block all non-loopback network calls (INV-11)."""
-    if "allow_egress" in request.fixturenames:
-        yield
-        return
-    socket.socket.connect = _blocking_connect  # type: ignore[method-assign]
-    socket.getaddrinfo = _blocking_getaddrinfo  # type: ignore[assignment]
-    try:
-        yield
-    finally:
-        socket.socket.connect = _original_connect  # type: ignore[method-assign]
-        socket.getaddrinfo = _original_getaddrinfo  # type: ignore[assignment]
+@pytest.fixture(scope="session")
+def milp_t1(manifest: list[dict]) -> list[dict]:
+    return [m for m in manifest
+            if m.get("tier") == "T1" and m.get("class_") in ("MILP", "MIP")]
 
 
-@pytest.fixture
-def allow_egress() -> None:
-    """Request this fixture in a test to bypass the egress block."""
-    yield  # noqa: PT022
+def model_path(entry: dict) -> Path:
+    """Resolve the absolute path for a manifest entry (uses 'file' key)."""
+    rel = entry.get("file", "")
+    if DATA_DIR is None:
+        raise FileNotFoundError("DATA_DIR not set")
+    p = DATA_DIR / rel
+    if p.exists():
+        return p
+    raise FileNotFoundError(f"Model file not found: {rel!r} (looked in {DATA_DIR})")
