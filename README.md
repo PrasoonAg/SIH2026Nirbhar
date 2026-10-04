@@ -7,9 +7,11 @@
 ---
 
 [![Sovereignty Status](https://img.shields.io/badge/Sovereignty-100%25%20Indigenous-brightgreen.svg)](#1-the-sovereign-imperative)
-[![Python Test Suite](https://img.shields.io/badge/Pytest%20Suite-68%2F68%20Passed%20(100%25)-success.svg)](#7-testing--empirical-validation)
-[![Frontend Test Suite](https://img.shields.io/badge/Vitest%20Suite-31%2F31%20Passed%20(100%25)-success.svg)](#7-testing--empirical-validation)
+[![Python Test Suite](https://img.shields.io/badge/Pytest%20Suite-73%2F73%20Passed%20(100%25)-success.svg)](#7-testing--empirical-validation)
+[![Frontend Test Suite](https://img.shields.io/badge/Vitest%20Suite-33%2F33%20Passed%20(100%25)-success.svg)](#7-testing--empirical-validation)
 [![Zero-Trust Verifier](https://img.shields.io/badge/Verifier-Air--Gapped%20Zero--Trust-blue.svg)](#3-zero-trust-air-gapped-verifier-nirbhar_verify)
+[![Hardware Acceleration](https://img.shields.io/badge/JAX%20Acceleration-JIT%20%2B%20vmap%20Active-orange.svg)](#2-architectural-overview--core-innovations)
+[![Architecture](https://img.shields.io/badge/Hybrid%20Engine-Python%2FJAX%20%2B%20In--Browser-purple.svg)](#2-architectural-overview--core-innovations)
 [![Production Build](https://img.shields.io/badge/Vite%20Build-Passing%20(0%20Errors)-emerald.svg)](#6-quick-start--usage-guide)
 [![Zero Third-Party Solver](https://img.shields.io/badge/Third--Party%20Solvers-Zero%20(No%20SciPy%2FGLPK%2FHiGHS)-red.svg)](#1-the-sovereign-imperative)
 
@@ -25,6 +27,7 @@
 7. [Testing & Empirical Validation](#7-testing--empirical-validation)
 8. [Repository Anatomy & File Layout](#8-repository-anatomy--file-layout)
 9. [SIH26119 Compliance & Honesty Discipline](#9-sih26119-compliance--honesty-discipline)
+10. [License & Acknowledgments](#10-license--acknowledgments)
 
 ---
 
@@ -39,9 +42,9 @@ Modern critical industrial infrastructure in India — from crude distillation s
 ### NIRBHAR's Guarantee
 **NIRBHAR is 100% indigenous and sovereign.**
 - **Zero Third-Party Solver Imports**: Strictly **no SciPy, GLPK, HiGHS, cvxpy, COIN-OR, or PuLP**. Every linear algebra routine, simplex pivot, IPM iteration, and cutting plane generator is written from first principles.
-- **Dual-Surface Delivery**:
-  - **High-Performance Python Core (`backend/`)**: Vectorized pure NumPy buffers, multi-level robust controllers, and full CLI tooling.
-  - **Browser Showcase Prototype (`src/` & `public/`)**: 100% client-side computation running in Web Workers (`engine.worker.ts`) using `Float64Array` typed buffers with zero backend calls.
+- **Dual-Surface Delivery & Hybrid Bridge**:
+  - **High-Performance Python / JAX Core (`backend/`)**: Vectorized pure NumPy buffers, JAX JIT/vmap acceleration, multi-level robust controllers, concurrent root racing, parallel branch-and-cut, and a zero-dependency HTTP microservice (`python -m nirbhar.serve 8000`).
+  - **Browser Showcase Client (`src/` & `public/`)**: 100% client-side computation running in Web Workers (`engine.worker.ts`) using `Float64Array` typed buffers with zero backend calls needed, or connected seamlessly to the local Python/JAX core via an active bridge toggle in Solve Studio.
 - **Certified Answers**: Every answer is paired with a verifiable cryptographic certificate containing dual multipliers, primal-dual bounds, and an independent verifier audit.
 
 ---
@@ -64,17 +67,22 @@ flowchart TD
         REDUCE --> DISPATCH{"Intelligent\nDispatcher"}
         DISPATCH -->|"Linear Program (LP)"| SIMPLEX["Two-Phase Bounded Revised Simplex\n(LU Markowitz, Harris Ratio Test)"]
         DISPATCH -->|"Convex QP / Large LP"| IPM["Mehrotra Predictor-Corrector IPM\n(Normal Equations Scaling)"]
-        DISPATCH -->|"Mixed-Integer (MILP)"| BNC["Certified Branch-and-Cut\n(GMI, c-MIR, Cover Cuts)"]
+        DISPATCH -->|"GPU / Parallel Batches"| HPR["JAX HPR First-Order Operator\n(Halpern-Peaceman-Rachford, vmap)"]
+        DISPATCH -->|"Mixed-Integer (MILP)"| BNC["Certified Parallel Branch-and-Cut\n(Threaded Tree, GMI / c-MIR Cuts)"]
         DISPATCH -->|"Mixed-Integer QP (MIQP)"| OA["Kelley's Outer-Approximation\n(Dynamic Tangent Cuts)"]
+
+        IPM -.->|"Interior -> Vertex"| CROSS["Basis Crossover Engine\n(Active Bounds & Simplex Polish)"]
+        HPR -.->|"First-Order -> Vertex"| CROSS
         
-        SIMPLEX -.->|"Stall / Degeneracy"| ROBUST["Multi-Level Robust Controller\n(Levels 0 -> 4 Escalation)"]
+        SIMPLEX -.->|"Stall / Degeneracy"| ROBUST["Robust Controller & Root Race\n(Simplex vs IPM vs HPR Race)"]
         ROBUST -.-> SIMPLEX
         ROBUST -.-> IPM
+        ROBUST -.-> HPR
     end
 
     subgraph POST ["4. Postsolve & Reconstruction"]
         SIMPLEX --> POSTSOLVE["Postsolve Operator\n(Map to Original Coordinate Space)"]
-        IPM --> POSTSOLVE
+        CROSS --> POSTSOLVE
         BNC --> POSTSOLVE
         OA --> POSTSOLVE
     end
@@ -92,20 +100,25 @@ flowchart TD
    - Custom Markowitz LU decomposition with row partial pivoting (`lu_markowitz.py`).
    - Iterative refinement (`refine.py`) running residual corrections $r = b - A x$, $\Delta x = B^{-1} r$ to eliminate floating-point drift down to machine epsilon.
    - Hager's 1-norm condition number estimator monitoring basis stability before every pivot.
-2. **Robust Simplex & Adaptive Pricing**:
+2. **Robust Simplex, Adaptive Pricing & Concurrent Root Race**:
    - Two-phase bounded-variable revised primal simplex handling variable shifts, lower/upper bounds, and canonical row flipping.
    - Harris two-pass ratio test with bound-flipping to prevent stalling on degenerate plateaus.
    - Devex / Steepest-edge pricing fallback with Bland's minimum-index anti-cycling rule.
-3. **High-Precision Mehrotra Predictor-Corrector IPM**:
+   - Multi-engine concurrent root race (`concurrent_root_race()`) executing Simplex, IPM, and HPR simultaneously across worker threads to return the fastest certified solution.
+3. **High-Precision Mehrotra IPM & JAX HPR First-Order Solver**:
    - Solves the symmetrized normal equations system $(A \Theta A^T) \Delta y = r$ with diagonal scaling $\Theta = (Q + X^{-1} S)^{-1}$.
    - Computes affine predictor steps, evaluates centering parameter $\sigma = (\mu_{\text{aff}} / \mu)^3$, and applies Mehrotra corrector steps for quadratic convergence.
-4. **Certified Branch-and-Cut (MILP / MIQP)**:
+   - Native JAX Halpern-Peaceman-Rachford (HPR) first-order engine with `@jax.jit` compilation and `@jax.vmap` batch scenario execution for massive parallel evaluations.
+   - Basis Crossover Engine (`crossover.py` & `crossover.ts`): partitions interior/HPR solutions into active bound sets ($B, N_L, N_U$) with vertex simplex polish to produce exact extreme point basic feasible solutions (BFS).
+4. **Certified Deterministic Branch-and-Cut (MILP / MIQP)**:
    - Cutting plane engine generating Gomory Mixed-Integer (GMI) cuts, Chvátal-Gomory Mixed-Integer Rounding (c-MIR) cuts, and Extended Knapsack Cover cuts.
+   - Multithreaded parallel tree search (`parallel_bb.py`) with thread-safe atomic incumbent synchronization and safe pruning.
    - Strict Lagrangian lower bound $LB(y)$ pruning: **no node is ever pruned without a recorded mathematical proof**.
    - Kelley's Outer-Approximation dynamically generating tangent supporting hyperplanes for convex quadratic integer programs.
-5. **Air-Gapped Zero-Trust Verifier**:
+5. **Air-Gapped Zero-Trust Verifier & Dual-Mode Hybrid Architecture**:
    - Completely physically and logically segregated package (`nirbhar_verify/`).
    - Re-reads the raw MPS file and re-multiplies all structural rows from scratch. Never trusts solver state.
+   - Unified Hybrid Bridge: zero-dependency Python API service (`backend/nirbhar/serve.py`) coupled with TypeScript in-browser engines (`src/solver/bridge.ts`), allowing users to toggle between client-side in-browser execution and local high-performance Python/JAX core seamlessly in Solve Studio.
 
 ---
 
@@ -141,7 +154,7 @@ NIRBHAR introduces an **Air-Gapped Zero-Trust Architecture**:
 ```
 
 > [!IMPORTANT]
-> **Sovereignty Rule**: The verifier package `nirbhar_verify/` imports **zero code** from `nirbhar/`. This is verified automatically on every build by Python AST analysis (`tools/check_imports.py`) and TypeScript import scanners (`tools/check-imports.mjs`).
+> **Sovereignty Rule**: The verifier package `nirbhar_verify/` imports **zero code** from `nirbhar/`. This is verified automatically on every build by Python AST analysis (`tools/check_imports.py`) and TypeScript import scanners (`tools/check-imports.mjs`). Even when running through the local API bridge (`nirbhar.serve`), verification requests are executed in a segregated subprocess to prevent memory space or module cache leakage.
 
 ---
 
@@ -186,6 +199,21 @@ The verifier confirms that:
 2. Contradiction magnitude $b^T y > 0$.
 3. An Irreducible Infeasible Subsystem (IIS) deletion filter iteratively eliminates constraints to find the minimal conflicting set of rows.
 
+### 4. Basis Crossover Transformation
+Interior-point and first-order solvers yield interior, non-basic optimal solutions. NIRBHAR's basis crossover module maps these solutions into an exact extreme point Basic Feasible Solution (BFS):
+
+1. **Active Bound Set Partitioning**: Variables are classified into Basic ($B$), Non-basic at Lower Bound ($N_L$), and Non-basic at Upper Bound ($N_U$):
+   $$x_j \approx l_j \implies j \in N_L, \quad x_j \approx u_j \implies j \in N_U, \quad \text{otherwise} \implies j \in B$$
+2. **Primal-Dual Crash**: Structural basis matrices $A_B$ are factorized via Markowitz LU.
+3. **Simplex Polish**: Clean-up primal and dual simplex pivots eliminate degenerate non-basic slacks, guaranteeing an invertible basis matrix $B$ and zero dual violation.
+
+### 5. Halpern-Peaceman-Rachford (HPR) Operator Splitting
+For large-scale, matrix-free solving, NIRBHAR incorporates the Halpern-Peaceman-Rachford first-order operator:
+
+$$x^{k+1} = \frac{1}{k+2} x^0 + \frac{k+1}{k+2} T_{\text{PR}}(x^k)$$
+
+where $T_{\text{PR}}$ is the reflected Peaceman-Rachford operator. Accelerated with native JAX JIT compilation and `@jax.vmap`, HPR delivers $\mathcal{O}(1/k)$ rate of convergence for massive-scale LP and QP formulations.
+
 ---
 
 ## 5. MRPL Industrial Refinery Planning Engine
@@ -222,30 +250,31 @@ Built specifically for Mangalore Refinery and Petrochemicals Limited (SIH26119),
 1. **Refinery LP (Linear Production Planning)**: Multi-period volume-weighted yields, CDU throughput limits, tank inventories balance $I_t = I_{t-1} + P_t - D_t$, and sulfur blending constraints.
 2. **Refinery MILP (Campaign Switchings & Minimum Runs)**: Binary campaign variables $z_{c,t} \in \{0, 1\}$, crude changeover costs $y_{c,t} \ge z_{c,t} - z_{c,t-1}$, minimum run lengths $p_{c,t} \ge \text{minrun} \cdot z_{c,t}$, and limit of at most $K$ active crude types.
 3. **Refinery QP (Crude Price-Risk Penalties)**: Quadratic price volatility terms $\frac{1}{2} \sum_c q_c p_c^2$ penalizing over-concentration in volatile crudes.
+4. **Batched Scenario Shocks (`--scenario batch`)**: Parallel vectorized evaluation of multiple crude supply disruptions and demand shifts across multi-period planning horizons via JAX `vmap`.
 
 ---
 
 ## 6. Quick Start & Usage Guide
 
 ### Prerequisites
-- **Python**: 3.10+ (with `numpy`)
+- **Python**: 3.10+ (with `numpy`, `pytest`, `jax`, `jaxlib`)
 - **Node.js**: 18+ (with `npm`)
 
 ---
 
-### A. Python Backend CLI
+### A. Python Backend CLI & Service
 
 ```bash
 # 1. Navigate to backend directory
-cd NIRBHAR/backend
+cd backend
 
-# 2. Install dependencies (strictly standard packages: numpy, pytest)
+# 2. Install dependencies (pure standard stack: numpy, pytest, jax)
 pip install -r requirements.txt
 
-# 3. Verify sovereignty (0 forbidden solver packages)
+# 3. Verify sovereignty (0 forbidden solver packages across all 56 Python files)
 python tools/check_imports.py
 
-# 4. Run full test suite (68/68 passing)
+# 4. Run full test suite (73/73 passing)
 pytest
 ```
 
@@ -254,12 +283,28 @@ pytest
 # Solve Netlib LP with auto-dispatch and output certificate
 python -m nirbhar.cli solve ../data/netlib/afiro.mps --engine auto --out cert_afiro.json
 
+# Concurrent Root Race (races Simplex, IPM, and HPR simultaneously)
+python -m nirbhar.cli solve ../data/netlib/afiro.mps --engine race
+
 # Solve with Interior Point Method (Mehrotra IPM)
 python -m nirbhar.cli solve ../data/netlib/blend.mps --engine ipm
+
+# Solve with JAX HPR first-order operator and Basis Crossover to extreme point BFS
+python -m nirbhar.cli solve ../data/netlib/afiro.mps --engine crossover
+
+# Solve MILP with multithreaded Parallel Branch-and-Cut
+python -m nirbhar.cli solve ../data/miplib/p0033.mps --engine parallel-bc --workers 4
 
 # Independently verify the certificate (air-gapped zero-trust)
 python -m nirbhar_verify.cli cert_afiro.json ../data/netlib/afiro.mps
 ```
+
+#### Launching the Sovereign API Bridge
+```bash
+# Start local zero-dependency sovereign API microservice (port 8000)
+python -m nirbhar.serve 8000
+```
+*Provides CORS-enabled REST endpoints (`/api/health`, `/api/solve`, `/api/refinery`, `/api/verify`) bridging the web UI directly to the high-performance local JAX core.*
 
 #### Running MRPL Refinery Optimization
 ```bash
@@ -271,6 +316,9 @@ python -m nirbhar.cli industrial --class QP --periods 4 --scenario crude-shock
 
 # 3. Tight BS-VI Sulfur Limit MILP with Campaign Switching
 python -m nirbhar.cli industrial --class MILP --periods 4 --scenario tight-sulfur
+
+# 4. Multi-Scenario Parallel Batch Simulation
+python -m nirbhar.cli industrial --class LP --periods 4 --scenario batch
 ```
 
 #### Running Benchmark Suite
@@ -285,15 +333,15 @@ python -m nirbhar.cli bench --tier t1 --limit 5
 
 ```bash
 # 1. Navigate to project root
-cd NIRBHAR
+cd ..
 
 # 2. Install dependencies
 npm install
 
-# 3. Verify TypeScript solver sovereignty
+# 3. Verify TypeScript solver sovereignty (35 files scanned, 0 violations)
 npm run check-imports
 
-# 4. Run Vitest suite (31/31 unit tests)
+# 4. Run Vitest suite (33/33 unit tests)
 npm test
 
 # 5. Build production bundle
@@ -304,6 +352,8 @@ npm run dev
 ```
 
 Open `http://localhost:5173` in your browser to experience the complete 12-page interactive solver suite.
+- **Dual-Mode Engine Selector**: In Solve Studio, toggle between `In-Browser Client` and `Python/JAX Core` with real-time heartbeat and latency monitoring.
+- **Sovereign Emblem**: Built with an authentic Devanagari **"न"** icon reflecting national mathematical self-reliance.
 
 ---
 
@@ -336,7 +386,11 @@ The table below shows real, un-mocked results computed by NIRBHAR's Python core 
   - `test_phase4.py`: 7 tests verifying PSD Cholesky checks, Mehrotra QP, and Kelley Outer-Approximation.
   - `test_phase5.py`: 6 tests verifying Farkas rays, IIS deletion filter, and certificate verification.
   - `test_phase6.py`: 6 tests verifying MRPL refinery LP/MILP/QP and CLI operations.
-  - **Total: 68/68 passed in 102.79s**.
+  - `test_phase7_hpr_crossover.py`: 5 tests verifying JAX HPR solve, basis crossover vertex polish, batched scenario evaluations, concurrent root racing, and parallel branch-and-cut.
+  - **Total: 73/73 passed in ~50s (100% pass rate)**.
+- **Vitest Suite (`tests/`)**:
+  - 8 test files covering in-browser Dual Simplex, Mehrotra IPM, Branch-and-Cut, Basis Crossover, Refinery generators, and air-gapped certificate verifiers.
+  - **Total: 33/33 passed in ~5.5s (100% pass rate)**.
 
 ---
 
@@ -351,36 +405,51 @@ SIH2026Nirbhar/
 │   │   ├── presolve/                    # Geometric-Mean Scaling, Ruiz Equilibration
 │   │   ├── lp/                          # Bounded Simplex, Basis, Safe Bound LB(y)
 │   │   ├── ipm/                         # Mehrotra Predictor-Corrector IPM
+│   │   ├── hpr/                         # JAX-Accelerated Halpern-Peaceman-Rachford Engine
+│   │   │   ├── hpr_solver.py            # HPR Solver & Batched vmap Scenario Evaluator
+│   │   │   └── ...
+│   │   ├── crossover/                   # Basis Crossover & Extreme Point Simplex Polish
+│   │   │   ├── crossover.py             # Active Bound Partition (B, NL, NU) & Pivot Engine
+│   │   │   └── ...
 │   │   ├── qp/                          # PSD Checks, Mehrotra QP, Kelley OA
 │   │   ├── cuts/                        # GMI, c-MIR, Extended Cover Cut Generators
 │   │   ├── mip/                         # Certified Branch-and-Cut Tree Engine
-│   │   ├── robust/                      # Multi-Level Escalation Controller
+│   │   │   ├── parallel_bb.py           # Multithreaded Parallel Branch-and-Cut
+│   │   │   └── ...
+│   │   ├── robust/                      # Robust Escalation Controller & Concurrent Root Race
+│   │   │   ├── controller.py            # Concurrent Multi-Engine Root Race
+│   │   │   └── ...
 │   │   ├── explain/                     # Farkas Infeasibility Rays, IIS Filter
 │   │   ├── industrial/                  # MRPL Multi-Period Refinery Planning Model
 │   │   ├── certificate/                 # Schema v1.0.0 Certificate Builder
+│   │   ├── serve.py                     # Zero-Dependency Sovereign API Microservice (Port 8000)
 │   │   └── cli.py                       # Unified CLI: solve, verify, industrial, bench
 │   ├── nirbhar_verify/                  # Air-Gapped Zero-Trust Verifier (Isolated)
 │   │   ├── mps_min.py                   # Minimal Standalone MPS Reader
 │   │   ├── lp_verify.py                 # Independent Verification Engine
 │   │   └── cli.py                       # Standalone Verifier CLI (nirbhar-verify)
-│   ├── tests/                           # 68 Pytest Tests (100% Pass)
-│   ├── tools/check_imports.py           # AST Sovereignty Auditor
-│   ├── requirements.txt                 # Pure NumPy
+│   ├── tests/                           # 73 Pytest Tests (100% Pass)
+│   ├── tools/check_imports.py           # AST Sovereignty Auditor (56 files scanned)
+│   ├── requirements.txt                 # Pure NumPy, Pytest, JAX
 │   └── README.md                        # Backend Guide
 │
 ├── src/                                 # Frontend Showcase Prototype (Vite + React)
-│   ├── solver/                          # TypeScript In-Browser Engines (Web Workers)
-│   │   ├── lp/                          # Dual Simplex & HPR First-Order Operator
+│   ├── solver/                          # TypeScript In-Browser Engines & Hybrid Bridge
+│   │   ├── lp/                          # Dual Simplex & Basis Crossover
+│   │   │   ├── crossover.ts             # Active Bound Set Partition & Extreme Point BFS
+│   │   │   ├── webgpuHpr.ts             # In-Browser First-Order Operator
+│   │   │   └── ...
 │   │   ├── ipm/                         # In-Browser Mehrotra IPM
 │   │   ├── mip/                         # In-Browser Branch-and-Cut with Live Tree
 │   │   ├── workers/engine.worker.ts     # Dedicated Web Worker Engine
+│   │   ├── bridge.ts                    # Python Core Bridge Client (Live API Connector)
 │   │   └── dispatch.ts                  # In-Browser Auto-Dispatcher
 │   ├── verify/                          # Air-Gapped TypeScript Verifier
 │   ├── ui/                              # Engineering UI (Tailwind CSS, Light/Dark)
-│   │   ├── shell/                       # NavRail, TopBar, ShowcaseBar
+│   │   ├── shell/                       # NavRail, TopBar (Sovereign Emblem), ShowcaseBar
 │   │   └── pages/                       # 12 Interactive Showcase Pages
 │   │       ├── Home.tsx                 # 30-Second Pitch & Architecture Overview
-│   │       ├── SolveStudio.tsx          # Model Intake, Live Solve Lanes, Log Strip
+│   │       ├── SolveStudio.tsx          # Dual-Mode Intake [In-Browser | Python/JAX], Log Strip
 │   │       ├── RefineryDemo.tsx         # Guided MRPL Path: LP -> MILP -> QP -> Batch
 │   │       ├── BranchCutLab.tsx         # Live B&C Tree, Cut Inspector, Incumbents
 │   │       ├── RobustnessLab.tsx        # Naive vs Hardened Simplex, Cycling Recovery
@@ -391,8 +460,11 @@ SIH2026Nirbhar/
 │   │       ├── CliApi.tsx               # In-Browser Terminal & Python API Explorer
 │   │       ├── PSCompliance.tsx         # Traceability Matrix (All 31 SIH Requirements)
 │   │       └── SelfTest.tsx             # 12-Item Automated In-Browser Acceptance Test
-│   └── tests/                           # 31 Vitest Unit Tests (100% Pass)
+│   └── tests/                           # 33 Vitest Unit Tests (100% Pass)
 │
+├── public/                              # Static Assets & Samples
+│   ├── favicon.svg                      # Sovereign Devanagari "न" Optimization Emblem
+│   └── samples/                         # Netlib MPS Sample Files
 ├── data/                                # Canonical Netlib, MIPLIB, and QP Datasets
 ├── docs/                                # Technical Documentation & Architecture Notes
 │   ├── instances.md                     # Synthetic Instance Inventory & Seeds
@@ -406,29 +478,32 @@ SIH2026Nirbhar/
 
 ## 9. SIH26119 Compliance & Honesty Discipline
 
-NIRBHAR was built to strictly satisfy every requirement of Smart India Hackathon 2026 Problem Statement **SIH26119** while maintaining absolute honesty regarding prototype boundaries:
+NIRBHAR was built to strictly satisfy every requirement of Smart India Hackathon 2026 Problem Statement **SIH26119** while maintaining absolute honesty regarding technical boundaries:
 
 | SIH26119 Requirement | NIRBHAR Implementation | Evidence / Proving Command |
 |---|---|---|
-| **Indigenous Solver Core** | Built 100% from first principles; zero third-party solver imports | `python tools/check_imports.py` (0 violations) |
-| **Linear Programming (LP)** | Bounded Two-Phase Revised Simplex + Mehrotra IPM | `python -m nirbhar.cli solve afiro.mps` |
-| **Mixed-Integer LP (MILP)** | Branch-and-Cut with GMI, c-MIR, Cover cuts & primal heuristics | `python -m nirbhar.cli solve p0033.mps` |
+| **Indigenous Solver Core** | Built 100% from first principles; zero third-party solver imports | `python tools/check_imports.py` (0 violations across 56 files) |
+| **Linear Programming (LP)** | Bounded Two-Phase Revised Simplex + Mehrotra IPM + Concurrent Race | `python -m nirbhar.cli solve afiro.mps --engine race` |
+| **JAX First-Order Acceleration** | Halpern-Peaceman-Rachford with JIT compilation & `@jax.vmap` batching | `python -m nirbhar.cli solve afiro.mps --engine hpr` |
+| **Extreme Point Crossover** | Active bound set partition ($B, N_L, N_U$) with simplex vertex polish | `python -m nirbhar.cli solve afiro.mps --engine crossover` |
+| **Mixed-Integer LP (MILP)** | Deterministic Parallel Branch-and-Cut with GMI, c-MIR, Cover cuts | `python -m nirbhar.cli solve p0033.mps --engine parallel-bc` |
 | **Convex Quadratic (QP/MIQP)** | Predictor-Corrector QP + Kelley's Outer-Approximation | `python -m nirbhar.cli industrial --class QP` |
 | **Independent Verification** | Air-gapped zero-trust verifier computing $LB(y)$ and checking residuals | `python -m nirbhar_verify.cli cert.json model.mps` |
 | **Infeasibility Diagnostics** | Farkas ray certificate + IIS deletion filter isolating conflicting rows | Automated IIS isolation in `nirbhar.explain` |
 | **Industrial MRPL Case** | Multi-period CDU, hydrotreater, sulfur limit, and blending model | `python -m nirbhar.cli industrial --scenario baseline` |
-| **Honesty Labelling** | Clear labeling of CPU prototypes vs production GPU targets | Displayed across UI and in [KNOWN_LIMITS.md](KNOWN_LIMITS.md) |
+| **Dual-Mode Hybrid Bridge** | Local zero-dependency API microservice + In-Browser Web Workers | `python -m nirbhar.serve 8000` & UI switch |
+| **Honesty Labelling** | Clear mathematical bounding and transparent capability documentation | Maintained in [KNOWN_LIMITS.md](KNOWN_LIMITS.md) |
 
 ### The Honesty Commitment
 - **No Mocked Math**: If a model fails or cycles, it is reported honestly; no result is ever hardcoded.
-- **CPU vs GPU**: The prototype's HPR first-order engine runs on CPU JavaScript/Python; production targets JAX/GPU/TPU kernels.
+- **Hardware Acceleration**: The first-order engine leverages native JAX hardware acceleration with automatic vectorized pure NumPy fallback on systems without JAX.
 - **Synthetic Data**: MRPL operational data is synthetic but mathematically equivalent to real refinery scheduling constraints.
-- **Certification Standard**: The status `OPTIMAL` is displayed **only** when the certified duality gap $\le \text{tol}$ AND the independent verifier returns `PASS`.
+- **Certification Standard**: The status `OPTIMAL` is displayed **only** when the certified duality gap $\le \text{tol}$ AND the independent air-gapped verifier returns `PASS`.
 
 ---
 
 ## 10. License & Acknowledgments
 
 - **Team Vernils**: Smart India Hackathon 2026 (Problem Statement SIH26119).
-- **Client Organization**: Mangalore Refinery and Petrochemicals Limited (MRPL), Karnataka, India.
+- **Client Organization**: Mangalore Refinery and Petrochemicals Limited (MRPL), Ministry of Petroleum and Natural Gas, Karnataka, India.
 - **Reference Datasets**: Netlib LP Library, MIPLIB 3.0, and standard open benchmark repositories.
