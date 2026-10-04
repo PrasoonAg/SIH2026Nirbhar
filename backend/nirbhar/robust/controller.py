@@ -204,6 +204,95 @@ def _solve_at_level(model: Model, level: int, opts: RobustOptions, time_limit_s:
                 iters=0, msg=f"IPM failed: {e}",
             )
 
+    elif level == 5:
+        # ── Level 5: HPR First-Order + Basis Crossover ────────────────────────
+        try:
+            from nirbhar.hpr.hpr_solver import hpr_solve, HPROptions
+            from nirbhar.crossover.crossover import crossover_solve, CrossoverOptions
+            hpr_opts = HPROptions(max_iter=3000, tol=1e-4)
+            hpr_res = hpr_solve(model, options=hpr_opts)
+            if hpr_res.status in ("OPTIMAL", "CONVERGED"):
+                xo_res = crossover_solve(model, hpr_res.x, hpr_res.y)
+                return LPResult(
+                    status=xo_res.status,
+                    x=xo_res.x,
+                    y=xo_res.y,
+                    z_primal=xo_res.z_primal,
+                    z_dual=xo_res.z_dual,
+                    gap=xo_res.gap,
+                    iters=hpr_res.iters + xo_res.polish_iters,
+                    msg=f"HPR+Crossover: {hpr_res.iters} HPR iters, {xo_res.polish_iters} polish iters",
+                )
+            return hpr_res
+        except Exception as e:
+            return LPResult(
+                status="NUMERICAL", x=np.zeros(model.ncols), y=np.zeros(model.nrows),
+                z_primal=float("inf"), z_dual=float("-inf"), gap=float("inf"),
+                iters=0, msg=f"HPR+Crossover failed: {e}",
+            )
+
     else:
         dss_opts = DSSOptions(max_iter=200_000, verbose=opts.verbose)
         return dual_simplex_solve(model, opts=dss_opts)
+
+
+def concurrent_root_race(
+    model: Model,
+    timeout_s: float = 60.0,
+    verbose: bool = False,
+) -> SolverResult:
+    """
+    Concurrent Root Race (§6.12, Slide 2 & 3).
+    Races Simplex, Mehrotra IPM, and GPU/CPU HPR concurrently at the root.
+    The first engine to prove a verified safe bound wins.
+    """
+    import concurrent.futures
+
+    def _run_simplex():
+        return ("simplex", dual_simplex_solve(model, DSSOptions(verbose=verbose)))
+
+    def _run_ipm():
+        from nirbhar.ipm.mehrotra import mehrotra_ipm, IPMOptions
+        return ("ipm", mehrotra_ipm(model, IPMOptions(verbose=verbose)))
+
+    def _run_hpr():
+        from nirbhar.hpr.hpr_solver import hpr_solve, HPROptions
+        from nirbhar.crossover.crossover import crossover_solve
+        res = hpr_solve(model, HPROptions(max_iter=2500, verbose=verbose))
+        if res.status in ("OPTIMAL", "CONVERGED"):
+            xo = crossover_solve(model, res.x, res.y)
+            return ("hpr-crossover", LPResult(
+                status=xo.status, x=xo.x, y=xo.y,
+                z_primal=xo.z_primal, z_dual=xo.z_dual, gap=xo.gap,
+                iters=res.iters + xo.polish_iters, msg="HPR with Basis Crossover"
+            ))
+        return ("hpr", res)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+        futures = [
+            executor.submit(_run_simplex),
+            executor.submit(_run_ipm),
+            executor.submit(_run_hpr),
+        ]
+        winner_name = "none"
+        winner_res = None
+        for fut in concurrent.futures.as_completed(futures, timeout=timeout_s):
+            try:
+                name, res = fut.result()
+                if getattr(res, "status", None) == "OPTIMAL":
+                    winner_name = name
+                    winner_res = res
+                    break
+            except Exception:
+                continue
+
+    if winner_res is None:
+        # Fallback to standard sequential dispatch
+        return dispatch_solve(model)
+
+    return SolverResult(
+        inner=winner_res,
+        level_used=0,
+        attempts=1,
+        status="OPTIMAL"
+    )

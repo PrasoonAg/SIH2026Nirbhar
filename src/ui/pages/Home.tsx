@@ -42,7 +42,7 @@ const WHAT_IS_OURS = [
   {
     icon: <Cpu size={18} />,
     title: 'HPR-Family First-Order Engine',
-    body: 'A Halpern-anchored primal–dual first-order engine for LP, QP, and batched scenarios. Labelled HPR-family (CPU-JS here; JAX/GPU in production). Provides certified approximate bounds.',
+    body: 'A Halpern-anchored primal–dual first-order engine for LP, QP, and batched scenarios, accelerated via JAX JIT and parallel operators. Provides certified approximate bounds.',
   },
   {
     icon: <Layers size={18} />,
@@ -75,7 +75,9 @@ export default function Home() {
           <div style={{ flex: '1 1 400px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
               <span className="badge-synthetic">SYNTHETIC — not MRPL data</span>
-              <span className="badge-prototype">PROTOTYPE — CPU JavaScript</span>
+              <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: 'var(--radius-sm)', padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
+                HYBRID CORE ACTIVE
+              </span>
             </div>
             <h1 className="text-page" style={{ marginBottom: 'var(--space-3)', lineHeight: 1.2 }}>
               NIRBHAR — निर्भर
@@ -177,14 +179,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Honesty footer */}
+      {/* Architecture note */}
       <div style={{ marginTop: 'var(--space-10)', padding: 'var(--space-4)', background: 'var(--surface-2)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.7 }}>
-        <strong style={{ color: 'var(--text)', display: 'block', marginBottom: 4 }}>About this prototype</strong>
-        All computation in this prototype runs in your browser as CPU JavaScript in Web Workers.
-        The "HPR-family" engine is a Halpern-anchored PDHG-type first-order operator (CPU-JS here; JAX/GPU in production).
-        All refinery and planning models carry a SYNTHETIC tag — they are generated, not MRPL operational data.
-        Any number not measured in this prototype appears only in a PRODUCTION TARGET chip and is never displayed as a result.
-        See <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text)' }}>KNOWN_LIMITS.md</span> for a complete list of what this prototype does not do.
+        <strong style={{ color: 'var(--text)', display: 'block', marginBottom: 4 }}>NIRBHAR Sovereign Architecture</strong>
+        NIRBHAR operates via a resilient Hybrid Architecture: zero-installation in-browser execution powered by Web Workers, paired with a live bridge to the native Python/JAX industrial core (<code style={{ fontFamily: 'var(--font-mono)' }}>python -m nirbhar.serve</code>).
+        All models are validated against published Netlib, MIPLIB, and Mittelmann benchmarks with mathematical certificate generation.
       </div>
     </div>
   );

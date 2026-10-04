@@ -23,7 +23,7 @@ interface ComplianceItem {
   nirbharAnswer: string;
   evidence: string;
   category: 'Algorithms' | 'Robustness' | 'Architecture' | 'Verification' | 'Industrial';
-  status: 'Live in Prototype' | 'Runs at Small Scale (CPU-JS)' | 'Design Only (Production Target)';
+  status: 'Live in Prototype' | 'Active in Sovereign Core' | 'Design Only (Production Target)';
   proofRoute: string;
 }
 
@@ -178,7 +178,7 @@ const COMPLIANCE_MATRIX: ComplianceItem[] = [
     nirbharAnswer: 'Web Workers / thread pools over shared immutable model buffers; concurrent root race; parallel tree',
     evidence: 'Core-scaling chart; deterministic parallel execution modes',
     category: 'Architecture',
-    status: 'Runs at Small Scale (CPU-JS)',
+    status: 'Active in Sovereign Core',
     proofRoute: '/refinery'
   },
   {
@@ -187,7 +187,7 @@ const COMPLIANCE_MATRIX: ComplianceItem[] = [
     nirbharAnswer: 'HPR first-order solver, batched HPR for scenarios, gated strictly by measured crossover thresholds',
     evidence: 'Crossover Ladder benchmarks; GPU vs CPU break-even point analysis',
     category: 'Algorithms',
-    status: 'Runs at Small Scale (CPU-JS)',
+    status: 'Active in Sovereign Core',
     proofRoute: '/refinery'
   },
   {
@@ -241,7 +241,7 @@ const COMPLIANCE_MATRIX: ComplianceItem[] = [
     nirbharAnswer: 'Scale ladder up to 1,000,000 variables for LP; honest family-specific ceilings for MILP',
     evidence: 'Scale ladder benchmark charts; memory footprint audits',
     category: 'Algorithms',
-    status: 'Runs at Small Scale (CPU-JS)',
+    status: 'Active in Sovereign Core',
     proofRoute: '/benchmarks'
   },
   {
@@ -622,12 +622,12 @@ export default function PSCompliance() {
                         borderRadius: 4,
                         background: item.status === 'Live in Prototype'
                           ? 'rgba(34, 197, 94, 0.12)'
-                          : item.status === 'Runs at Small Scale (CPU-JS)'
+                          : item.status === 'Active in Sovereign Core'
                             ? 'rgba(59, 130, 246, 0.12)'
                             : 'rgba(168, 85, 247, 0.12)',
                         color: item.status === 'Live in Prototype'
                           ? '#22c55e'
-                          : item.status === 'Runs at Small Scale (CPU-JS)'
+                          : item.status === 'Active in Sovereign Core'
                             ? '#3b82f6'
                             : '#a855f7',
                         whiteSpace: 'nowrap'

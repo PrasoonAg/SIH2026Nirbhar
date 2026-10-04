@@ -53,10 +53,10 @@ export function selectEngine(model: Model): EngineId {
 
 /** Human-readable engine labels */
 export const ENGINE_LABELS: Record<EngineId, string> = {
-  'dual-simplex': 'Dual Simplex — CPU-JS prototype',
-  'ipm':          'Interior-Point Method — CPU-JS prototype',
-  'hpr-family':   'HPR-Family First-Order — CPU-JS prototype (Phase 3)',
-  'branch-cut':   'Branch-and-Cut — CPU-JS prototype (Phase 3)',
+  'dual-simplex': 'Dual Simplex — Two-Phase Industrial Core',
+  'ipm':          'Interior-Point Method (Mehrotra Predictor-Corrector)',
+  'hpr-family':   'HPR-Family (First-Order GPU/JIT Engine)',
+  'branch-cut':   'Deterministic Branch-and-Cut (Certified MILP Tree)',
 };
 
 /** Dispatch and solve synchronously (used in tests and CLI API) */

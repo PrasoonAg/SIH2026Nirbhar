@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import sys
 import time
 from pathlib import Path
@@ -88,6 +89,30 @@ def cmd_solve(args: argparse.Namespace) -> int:
     elif method == "oa":
         res = outer_approximation_miqp(model, MIQPOptions(verbose=args.verbose))
         solve_path = ["outer-approximation"]
+    elif method == "hpr":
+        from nirbhar.hpr.hpr_solver import hpr_solve, HPROptions
+        res = hpr_solve(model, HPROptions(verbose=args.verbose))
+        solve_path = ["gpu-hpr-first-order"]
+    elif method == "crossover":
+        from nirbhar.hpr.hpr_solver import hpr_solve, HPROptions
+        from nirbhar.crossover.crossover import crossover_solve
+        h_res = hpr_solve(model, HPROptions(verbose=args.verbose))
+        xo = crossover_solve(model, h_res.x, h_res.y)
+        res = LPResult(
+            status=xo.status, x=xo.x, y=xo.y,
+            z_primal=xo.z_primal, z_dual=xo.z_dual, gap=xo.gap,
+            iters=h_res.iters + xo.polish_iters, msg="HPR with Basis Crossover"
+        )
+        solve_path = ["hpr-crossover-vertex-polish"]
+    elif method == "race":
+        from nirbhar.robust.controller import concurrent_root_race
+        s_res = concurrent_root_race(model, verbose=args.verbose)
+        res = s_res.inner
+        solve_path = ["concurrent-root-race"]
+    elif method == "parallel-bc":
+        from nirbhar.mip.parallel_bb import parallel_branch_and_cut_solve, ParallelBCOptions
+        res = parallel_branch_and_cut_solve(model, ParallelBCOptions())
+        solve_path = ["deterministic-parallel-branch-and-cut"]
     elif method == "robust":
         s_res = dispatch_solve(model, RobustOptions(verbose=args.verbose))
         res = s_res.inner
@@ -157,7 +182,10 @@ def cmd_verify(args: argparse.Namespace) -> int:
 
     # Isolated verifier execution (zero imports from nirbhar_verify inside nirbhar)
     cmd = [sys.executable, "-m", "nirbhar_verify.cli", str(mps_path), str(cert_path)]
-    p = subprocess.run(cmd)
+    backend_root = str(Path(__file__).resolve().parent.parent)
+    env = dict(os.environ)
+    env["PYTHONPATH"] = backend_root + (os.pathsep + env["PYTHONPATH"] if "PYTHONPATH" in env else "")
+    p = subprocess.run(cmd, env=env)
     return p.returncode
 
 
@@ -274,7 +302,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     # 1. solve
     p_solve = subparsers.add_parser("solve", help="Solve an optimization model (.mps/.qps)")
     p_solve.add_argument("path", help="Path to MPS/QPS model file")
-    p_solve.add_argument("--method", "--engine", dest="method", choices=["auto", "simplex", "ipm", "bc", "oa", "robust"], default="auto")
+    p_solve.add_argument("--method", "--engine", dest="method", choices=["auto", "simplex", "ipm", "bc", "oa", "robust", "hpr", "crossover", "race", "parallel-bc"], default="auto")
     p_solve.add_argument("--cert", "--out", dest="cert", help="Output path for verification certificate (.json)")
     p_solve.add_argument("--json", action="store_true", help="Output machine-readable JSON")
     p_solve.add_argument("--verbose", action="store_true", help="Print iteration progress")

@@ -12,6 +12,10 @@ from nirbhar.mip.bb import (
     BCTreeSnapshot,
     brute_force_small_milp,
 )
+from nirbhar.mip.parallel_bb import (
+    parallel_branch_and_cut_solve,
+    ParallelBCOptions,
+)
 from nirbhar.mip.nodesel import BNode, select_next_node
 from nirbhar.mip.branching import (
     select_branching_variable,
@@ -24,8 +28,10 @@ from nirbhar.mip.heuristics import is_integer_feasible, try_rounding_heuristic
 
 __all__ = [
     "branch_and_cut_solve",
+    "parallel_branch_and_cut_solve",
     "branch_and_bound_solve",
     "BCOptions",
+    "ParallelBCOptions",
     "BCResult",
     "BCTreeSnapshot",
     "brute_force_small_milp",

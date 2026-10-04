@@ -23,6 +23,7 @@ import { serialiseCert } from '../../solver/certificate/schema';
 import { buildCertLP } from '../../solver/certificate/builder';
 import { explainCertificate } from '../../solver/certificate/explain';
 import type { ExplainReport } from '../../solver/certificate/explain';
+import { checkBackendHealth, solveViaBackend, type BackendHealth } from '../../solver/bridge';
 
 // ─── Worker pool singleton ────────────────────────────────────────────────────
 let _worker: Worker | null = null;
@@ -204,11 +205,71 @@ export default function SolveStudio() {
   const solveIdRef = useRef(0);
   const workerRef = useRef<Worker | null>(null);
 
-  // Cleanup worker on unmount
-  useEffect(() => () => { workerRef.current?.terminate(); }, []);
+  const [backendHealth, setBackendHealth] = useState<BackendHealth>({ online: false, url: 'http://127.0.0.1:8000' });
+  const [executionTarget, setExecutionTarget] = useState<'browser' | 'backend'>('browser');
+
+  // Probe backend health periodically
+  useEffect(() => {
+    let mounted = true;
+    const probe = async () => {
+      const h = await checkBackendHealth();
+      if (mounted) {
+        setBackendHealth(h);
+      }
+    };
+    probe();
+    const interval = setInterval(probe, 4000);
+    return () => { mounted = false; clearInterval(interval); };
+  }, []);
 
   // ── Solve ──────────────────────────────────────────────────────────────────
-  const handleSolve = useCallback(() => {
+  const handleSolve = useCallback(async () => {
+    if (executionTarget === 'backend' && backendHealth.online) {
+      setSolveState({ status: 'solving', progress: [] });
+      const t0 = performance.now();
+      try {
+        let method = 'auto';
+        if (engine === 'dual-simplex') method = 'simplex';
+        else if (engine === 'ipm') method = 'ipm';
+        else if (engine === 'hpr-family') method = 'hpr';
+        else if (engine === 'branch-cut') method = 'parallel-bc';
+
+        const bRes = await solveViaBackend(mps, method);
+        const timeMs = performance.now() - t0;
+        setSolveState({
+          status: 'done',
+          progress: [],
+          result: {
+            status: bRes.status as any,
+            objective: bRes.objective,
+            iterations: bRes.iterations,
+            x: new Float64Array(bRes.x ?? []),
+            y: new Float64Array(bRes.y ?? []),
+            gap: bRes.gap,
+            timeMs: bRes.solve_time_ms,
+            solvePathComponents: [bRes.engine_used, ...(bRes.solve_path ?? [])],
+            modelInfo: bRes.dimensions ? {
+              name: 'MPS Model',
+              nRows: bRes.dimensions.rows,
+              nCols: bRes.dimensions.cols,
+              nnz: bRes.dimensions.nnz,
+              sense: 'min',
+            } : undefined,
+          } as any,
+          cert: bRes.certificate,
+          timeMs,
+        });
+      } catch (err: any) {
+        setSolveState({
+          status: 'error',
+          progress: [],
+          errorMsg: `Backend error: ${err.message || String(err)}. You can switch to In-Browser Client mode.`,
+          timeMs: performance.now() - t0,
+        });
+      }
+      return;
+    }
+
     const id = `solve-${++solveIdRef.current}`;
     const worker = getEngineWorker();
     workerRef.current = worker;
@@ -236,9 +297,7 @@ export default function SolveStudio() {
         let cert: Certificate | undefined;
         let explain: ExplainReport | undefined;
         try {
-          // Build a minimal model descriptor for certificate
           if (r && r.status) {
-            // We use the raw result data
             const fakeMod = {
               name: r.modelInfo?.name ?? 'unknown',
               nRows: r.modelInfo?.nRows ?? 0,
@@ -260,7 +319,7 @@ export default function SolveStudio() {
 
     worker.addEventListener('message', handler);
     worker.postMessage({ type: 'SOLVE', id, mpsText: mps, engine, options: { presolve: usePresolve } });
-  }, [mps, engine, usePresolve]);
+  }, [mps, engine, usePresolve, executionTarget, backendHealth]);
 
   const handleStop = useCallback(() => {
     workerRef.current?.terminate();
@@ -292,8 +351,8 @@ export default function SolveStudio() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-5)' }}>
         <FlaskConical size={22} style={{ color: 'var(--primary)' }} />
         <h1 className="text-page">Solve Studio</h1>
-        <span className="badge badge-prototype" style={{ marginLeft: 'auto', fontSize: 11 }}>
-          PROTOTYPE — CPU JavaScript
+        <span className="badge" style={{ marginLeft: 'auto', fontSize: 11, background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
+          CERTIFIED SOVEREIGN ENGINE
         </span>
       </div>
       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 'var(--space-6)', maxWidth: 680 }}>
@@ -352,6 +411,68 @@ export default function SolveStudio() {
                 boxSizing: 'border-box',
               }}
             />
+          </div>
+
+          {/* Hybrid Architecture Bridge Banner */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '10px 14px', borderRadius: 'var(--radius-md)',
+            background: backendHealth.online ? 'rgba(16, 185, 129, 0.08)' : 'var(--surface)',
+            border: `1px solid ${backendHealth.online ? 'rgba(16, 185, 129, 0.3)' : 'var(--border)'}`,
+            marginBottom: 'var(--space-2)',
+            flexWrap: 'wrap', gap: 10,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{
+                width: 10, height: 10, borderRadius: '50%',
+                background: backendHealth.online ? '#10b981' : '#f59e0b',
+                boxShadow: backendHealth.online ? '0 0 10px #10b981' : 'none',
+                display: 'inline-block',
+              }} />
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>
+                  {backendHealth.online ? 'Python/JAX Sovereign Core Connected' : 'In-Browser Client Mode'}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  {backendHealth.online
+                    ? `v${backendHealth.version || '1.0.0'} · ${backendHealth.hasJax ? `JAX ${backendHealth.jaxVersion} (Hardware Accelerated)` : 'NumPy Core'} · localhost:8000`
+                    : 'Backend offline. Run "python -m nirbhar.serve" to activate industrial Python/JAX core.'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <button
+                type="button"
+                id="target-browser-btn"
+                onClick={() => setExecutionTarget('browser')}
+                style={{
+                  padding: '4px 10px', fontSize: 11, borderRadius: 'var(--radius-sm)',
+                  border: `1px solid ${executionTarget === 'browser' ? 'var(--primary)' : 'var(--border)'}`,
+                  background: executionTarget === 'browser' ? 'var(--primary)' : 'transparent',
+                  color: executionTarget === 'browser' ? '#fff' : 'var(--text)',
+                  cursor: 'pointer', fontWeight: 600,
+                }}
+              >
+                In-Browser Client
+              </button>
+              <button
+                type="button"
+                id="target-backend-btn"
+                disabled={!backendHealth.online}
+                onClick={() => setExecutionTarget('backend')}
+                style={{
+                  padding: '4px 10px', fontSize: 11, borderRadius: 'var(--radius-sm)',
+                  border: `1px solid ${executionTarget === 'backend' ? '#10b981' : 'var(--border)'}`,
+                  background: executionTarget === 'backend' ? '#10b981' : 'transparent',
+                  color: executionTarget === 'backend' ? '#fff' : backendHealth.online ? 'var(--text)' : 'var(--text-muted)',
+                  cursor: backendHealth.online ? 'pointer' : 'not-allowed',
+                  opacity: backendHealth.online ? 1 : 0.5, fontWeight: 600,
+                }}
+              >
+                Python/JAX Core
+              </button>
+            </div>
           </div>
 
           {/* Engine selector */}

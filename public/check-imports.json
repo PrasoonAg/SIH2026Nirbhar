@@ -1,7 +1,8 @@
 {
-  "timestamp": "2026-10-03T22:11:24.224Z",
-  "scannedFiles": 32,
+  "timestamp": "2026-10-04T12:45:07.269Z",
+  "scannedFiles": 35,
   "files": [
+    "src/solver/bridge.ts",
     "src/solver/certificate/builder.ts",
     "src/solver/certificate/explain.ts",
     "src/solver/certificate/schema.ts",
@@ -17,8 +18,10 @@
     "src/solver/linalg/lu.ts",
     "src/solver/linalg/refine.ts",
     "src/solver/lp/basis.ts",
+    "src/solver/lp/crossover.ts",
     "src/solver/lp/dualSimplex.ts",
     "src/solver/lp/hpr.ts",
+    "src/solver/lp/webgpuHpr.ts",
     "src/solver/mip/bb.ts",
     "src/solver/mip/branching.ts",
     "src/solver/mip/cuts/cmir.ts",

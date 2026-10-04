@@ -63,3 +63,28 @@ describe('Branch-and-Cut Solver', () => {
     expect(res.objective).toBeCloseTo(bfObj, 2);
   });
 });
+
+describe('Basis Crossover Engine', () => {
+  it('performs crossover from HPR iterate to exact vertex basic optimum', async () => {
+    const { crossoverSolve } = await import('../src/solver/lp/crossover');
+    const { model } = parseMPS(SAMPLE_LP);
+    const hprRes = hprSolve(model, { maxIter: 500 });
+    const xoRes = crossoverSolve(model, hprRes.x, hprRes.y);
+    expect(xoRes.status).toBe('OPTIMAL');
+    expect(xoRes.isVertexBasic).toBe(true);
+    expect(xoRes.objective).toBeCloseTo(-8.0, 4);
+    expect(xoRes.basicVars.length).toBe(model.nRows);
+  });
+});
+
+describe('WebGPU First-Order Execution Pipeline', () => {
+  it('detects WebGPU device capability or gracefully falls back to CPU-JS', async () => {
+    const { getWebGPUDeviceInfo, webgpuHprSolve } = await import('../src/solver/lp/webgpuHpr');
+    const info = await getWebGPUDeviceInfo();
+    expect(typeof info.supported).toBe('boolean');
+    const { model } = parseMPS(SAMPLE_LP);
+    const res = await webgpuHprSolve(model, { maxIter: 200 });
+    expect(['OPTIMAL', 'CERTIFIED_APPROXIMATE', 'TIME_LIMIT']).toContain(res.status);
+    expect(res.deviceUsed).toBeDefined();
+  });
+});
