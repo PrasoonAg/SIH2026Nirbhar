@@ -43,12 +43,12 @@ export function TopBar() {
 
       <div className="topbar-divider" aria-hidden />
 
-      {/* Showcase Tour Mode */}
+      {/* Guided Tour Mode */}
       <button
         id="topbar-showcase-mode"
         className={`record-mode-btn${showcaseMode ? ' active' : ''}`}
         onClick={() => setShowcaseMode(!showcaseMode)}
-        title="Toggle Guided Showcase Tour — 6-chapter guided walkthrough for judges and reviewers"
+        title="Toggle Guided System Tour — 6-stage operational walkthrough across core solver subsystems"
         aria-pressed={showcaseMode}
         style={{
           background: showcaseMode ? 'rgba(59, 130, 246, 0.2)' : undefined,
@@ -57,7 +57,7 @@ export function TopBar() {
         }}
       >
         <Sparkles size={11} />
-        {showcaseMode ? 'Exit Tour' : 'Showcase Tour'}
+        {showcaseMode ? 'Exit Tour' : 'Guided Tour'}
       </button>
 
       <div className="topbar-divider" aria-hidden />

@@ -52,10 +52,10 @@ const WHAT_IS_OURS = [
 ];
 
 const DEMO_CHAPTERS = [
-  { num: '01', title: 'Refinery LP', desc: 'Race → winner → certificate → verifier PASS', path: '/refinery' },
-  { num: '02', title: 'Refinery MILP', desc: 'Live B&C tree, cuts, gap converging, brute-force MATCH', path: '/bnc-lab' },
-  { num: '03', title: 'Refinery QP', desc: 'IPM vs HPR-family, closed-form bound, non-convex refusal', path: '/refinery' },
-  { num: '04', title: 'Scenario Batch', desc: 'Sequential vs pool vs batched HPR, honest break-even chart', path: '/refinery' },
+  { num: '01', title: 'Refinery LP', desc: 'Concurrent Race → Certificate → Air-Gapped PASS', path: '/refinery' },
+  { num: '02', title: 'Refinery MILP', desc: 'Parallel B&C Tree, GMI Cuts, Gap Convergence', path: '/bnc-lab' },
+  { num: '03', title: 'Refinery QP', desc: 'Mehrotra IPM & JAX HPR, Duality Bounds', path: '/refinery' },
+  { num: '04', title: 'Scenario Batch', desc: 'Vectorized JAX vmap Multi-Period Risk Shocks', path: '/refinery' },
 ];
 
 export default function Home() {
@@ -97,7 +97,7 @@ export default function Home() {
             </p>
             <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
               <button id="home-start-demo" className="btn btn-primary btn-lg" onClick={startDemo}>
-                <Play size={16} /> Start 2-minute demo
+                <Play size={16} /> Launch Guided System Tour
               </button>
               <button id="home-run-selftest" className="btn btn-secondary btn-lg" onClick={() => navigate('/selftest')}>
                 <CheckSquare size={16} /> Run self-test
@@ -107,7 +107,7 @@ export default function Home() {
 
           {/* Core path preview */}
           <div className="card" style={{ flex: '0 0 320px', padding: 'var(--space-5)' }}>
-            <div className="text-label" style={{ marginBottom: 'var(--space-4)' }}>Core demo path (≈ 2 min)</div>
+            <div className="text-label" style={{ marginBottom: 'var(--space-4)' }}>Executive Tour Subsystems</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
               {DEMO_CHAPTERS.map((ch) => (
                 <div

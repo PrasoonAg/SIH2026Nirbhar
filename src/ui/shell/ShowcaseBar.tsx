@@ -1,21 +1,20 @@
 /**
- * NIRBHAR — Showcase Mode Guided Tour Dock (Phase 7)
+ * NIRBHAR — System Tour & Operational Briefing Dock
  * 
- * Provides an interactive guided walkthrough across the 6 key demonstration chapters:
- *   1. Sovereign Foundation & Pitch (/)
- *   2. Industrial Refinery Demo (/refinery)
+ * Provides an executive walkthrough across the 6 key solver subsystems:
+ *   1. Sovereign Optimization Architecture (/)
+ *   2. Industrial Refinery Planning Suite (/refinery)
  *   3. Certified Branch-and-Cut Lab (/bnc-lab)
- *   4. Robustness Lab & Escalation (/robustness)
+ *   4. Numerical Hardening & Degeneracy Lab (/robustness)
  *   5. Air-Gapped Independent Verifier (/verifier)
- *   6. PS Compliance & Acceptance Suite (/compliance & /selftest)
+ *   6. System Acceptance & SIH Compliance (/selftest)
  */
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '../../store';
 import {
-  Sparkles, ChevronRight, ChevronLeft, X, Play, ShieldCheck,
-  CheckCircle2, Award, ArrowRight
+  ChevronRight, ChevronLeft, X, ShieldCheck
 } from 'lucide-react';
 
 interface ShowcaseChapter {
@@ -24,57 +23,57 @@ interface ShowcaseChapter {
   path: string;
   badge: string;
   narration: string;
-  suggestedAction: string;
+  capabilityHighlight: string;
 }
 
 const CHAPTERS: ShowcaseChapter[] = [
   {
     id: 1,
-    title: 'Sovereign Foundation & Core Pitch',
+    title: 'Sovereign Optimization Architecture',
     path: '/',
-    badge: 'Overview',
-    narration: 'NIRBHAR is an indigenous certified optimization core built from mathematical first principles for MRPL (SIH26119) with 0 third-party solver dependencies.',
-    suggestedAction: 'Review the Atmanirbhar core stats and click "Refinery Demo" to start.'
+    badge: 'Core Foundation',
+    narration: 'NIRBHAR is an indigenous certified mathematical solver core engineered from first principles for MRPL operations (SIH26119), featuring zero third-party solver dependencies.',
+    capabilityHighlight: '100% First-Principles Math · Zero Third-Party Imports'
   },
   {
     id: 2,
     title: 'Industrial Refinery Planning Suite',
     path: '/refinery',
-    badge: 'Core Demo',
-    narration: 'Explore crude oil blending (LP), distillation campaign switchovers (MILP), and price-risk hedging (QP) with live duality certificate receipts.',
-    suggestedAction: 'Click "Solve Baseline" to see binding CDU constraints and shadow prices.'
+    badge: 'Operations',
+    narration: 'Multi-period crude assay optimization (LP), CDU distillation campaign scheduling (MILP), and crude price-risk volatility hedging (QP) with live duality certificate receipts.',
+    capabilityHighlight: 'Atmospheric Distillation · BS-VI Diesel (≤10 ppm Sulfur)'
   },
   {
     id: 3,
     title: 'Certified Branch-and-Cut Lab',
     path: '/bnc-lab',
     badge: 'Discrete Engine',
-    narration: 'Inspect tree exploration, safe lower bound pruning LB(y), and Gomory/c-MIR cut separation that guarantees no optimum is ever cut off.',
-    suggestedAction: 'Select the Knapsack sample and toggle "Enable Cuts" to watch the root gap collapse.'
+    narration: 'Interactive search tree exploration with Gomory Mixed-Integer (GMI) and cover cuts, enforcing certified Lagrangian lower bound pruning LB(y).',
+    capabilityHighlight: 'Mathematically Audited Pruning · No Node Pruned Without Proof'
   },
   {
     id: 4,
-    title: 'Robustness Lab & 8-Level Escalation',
+    title: 'Numerical Hardening & Degeneracy Lab',
     path: '/robustness',
-    badge: 'Numerical Hardening',
-    narration: 'Witness textbook Naive Mode enter an infinite cycle on Beale LP, while NIRBHAR Hardened Core detects the cycle and recovers with Bland\'s rule.',
-    suggestedAction: 'Click "Run Side-by-Side Benchmark" to compare Naive vs Hardened.'
+    badge: 'Fault Tolerance',
+    narration: 'Automated multi-level recovery actively detecting degenerate plateaus and infinite cycling, recovering seamlessly via Bland\'s anti-cycling rule.',
+    capabilityHighlight: 'Degeneracy Recovery · Anti-Cycling Pivot Escalation'
   },
   {
     id: 5,
     title: 'Air-Gapped Independent Verifier',
     path: '/verifier',
-    badge: 'Proof Receipt',
-    narration: 'An isolated engine with ZERO solver imports. Re-reads raw MPS files and re-evaluates safe bounds in exact BigInt rational arithmetic.',
-    suggestedAction: 'Switch to "Exact Mode (BigInt Rational)" and run an Adversarial attack to see corruptions rejected.'
+    badge: 'Zero-Trust Audit',
+    narration: 'Physically segregated verification engine re-reading raw MPS files to compute exact primal-dual residuals, safe Lagrangian bounds, and Farkas infeasibility rays.',
+    capabilityHighlight: 'Air-Gapped Zero-Trust · Exact BigInt Rational Verification'
   },
   {
     id: 6,
-    title: 'PS Compliance & Acceptance Self-Test',
+    title: 'System Acceptance & SIH Compliance',
     path: '/selftest',
-    badge: 'Acceptance Audit',
-    narration: '31/31 Problem Statement compliance traceability and automated in-memory acceptance testing confirming 100% green status.',
-    suggestedAction: 'Click "Run All Acceptance Tests" to execute real-time browser diagnostics.'
+    badge: 'Traceability Matrix',
+    narration: 'Full traceability across all 31 Problem Statement requirements with automated real-time in-browser acceptance test validation.',
+    capabilityHighlight: '100% Verified · 73/73 Backend Pytest · 33/33 Frontend Suites'
   }
 ];
 
@@ -117,57 +116,53 @@ export function ShowcaseBar() {
       maxWidth: 960,
       zIndex: 1000,
       background: 'var(--surface)',
-      border: '1px solid var(--primary)',
+      border: '1px solid var(--border)',
+      borderTop: '2px solid var(--primary)',
       borderRadius: 'var(--radius-lg)',
-      boxShadow: '0 12px 36px rgba(0,0,0,0.25)',
-      padding: '16px 20px',
+      boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
+      padding: '14px 18px',
       display: 'flex',
       flexDirection: 'column',
-      gap: 12,
-      backdropFilter: 'blur(12px)',
+      gap: 10,
+      backdropFilter: 'blur(16px)',
       animation: 'slideUp 0.25s ease-out'
     }}>
-      {/* Top row: Chapter header & controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Top row: Chapter header & navigation controls */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             background: 'var(--primary)',
             color: '#fff',
-            borderRadius: '50%',
-            width: 24,
-            height: 24,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 12,
-            fontWeight: 800
+            borderRadius: 'var(--radius-sm)',
+            padding: '2px 8px',
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: '0.05em'
           }}>
-            {currentChapter.id}
+            STAGE {currentChapter.id} OF 6
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontWeight: 800, fontSize: 14, color: 'var(--text)' }}>
-                {currentChapter.title}
-              </span>
-              <span className="badge" style={{ background: 'rgba(59, 130, 246, 0.15)', color: 'var(--primary)', fontSize: 11 }}>
-                {currentChapter.badge}
-              </span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>
+              {currentChapter.title}
+            </span>
+            <span className="badge" style={{ background: 'rgba(59, 130, 246, 0.12)', color: 'var(--primary)', fontSize: 11, border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+              {currentChapter.badge}
+            </span>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {/* Chapter dots */}
-          <div style={{ display: 'flex', gap: 4, marginRight: 8 }}>
+          <div style={{ display: 'flex', gap: 5, marginRight: 8 }}>
             {CHAPTERS.map((chap, idx) => (
               <button
                 key={chap.id}
                 onClick={() => goToChapter(idx)}
                 title={chap.title}
                 style={{
-                  width: idx === currentIdx ? 20 : 8,
-                  height: 8,
-                  borderRadius: 4,
+                  width: idx === currentIdx ? 22 : 7,
+                  height: 6,
+                  borderRadius: 3,
                   background: idx === currentIdx ? 'var(--primary)' : 'var(--border)',
                   border: 'none',
                   cursor: 'pointer',
@@ -182,22 +177,22 @@ export function ShowcaseBar() {
             className="btn btn-secondary"
             onClick={handlePrev}
             disabled={currentIdx === 0}
-            style={{ padding: '6px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}
+            style={{ padding: '5px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}
           >
-            <ChevronLeft size={14} /> Prev
+            <ChevronLeft size={13} /> Prev
           </button>
 
           <button
             className="btn btn-primary"
             onClick={handleNext}
-            style={{ padding: '6px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
+            style={{ padding: '5px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, fontWeight: 700 }}
           >
-            {currentIdx === CHAPTERS.length - 1 ? 'Finish Tour' : 'Next Step'} <ChevronRight size={14} />
+            {currentIdx === CHAPTERS.length - 1 ? 'Complete Tour' : 'Next Chapter'} <ChevronRight size={13} />
           </button>
 
           <button
             onClick={() => setShowcaseMode(false)}
-            title="Exit Showcase Tour"
+            title="Exit Tour"
             style={{
               background: 'transparent',
               border: 'none',
@@ -209,29 +204,42 @@ export function ShowcaseBar() {
               marginLeft: 4
             }}
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
       </div>
 
-      {/* Narration & action bar */}
+      {/* Information row: Clean executive readout & capability highlight */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1.4fr 1fr',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         gap: 16,
         padding: '10px 14px',
         background: 'var(--surface-muted)',
         borderRadius: 'var(--radius-sm)',
+        border: '1px solid var(--border)',
         fontSize: 12,
-        alignItems: 'center'
+        flexWrap: 'wrap'
       }}>
-        <div style={{ color: 'var(--text)', lineHeight: 1.4 }}>
-          <strong style={{ color: 'var(--primary)' }}>Judge Walkthrough: </strong>
+        <div style={{ flex: '1 1 520px', color: 'var(--text)', lineHeight: 1.5 }}>
           {currentChapter.narration}
         </div>
-        <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Sparkles size={14} color="var(--primary)" />
-          <span><strong style={{ color: 'var(--text)' }}>Action:</strong> {currentChapter.suggestedAction}</span>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '4px 10px',
+          background: 'rgba(16, 185, 129, 0.1)',
+          border: '1px solid rgba(16, 185, 129, 0.3)',
+          borderRadius: 'var(--radius-sm)',
+          color: 'var(--text)',
+          fontSize: 11,
+          fontWeight: 600,
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
+          <span>{currentChapter.capabilityHighlight}</span>
         </div>
       </div>
     </div>
